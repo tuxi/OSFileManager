@@ -74,7 +74,7 @@ static FileAttributedItem *_rootItem = nil;
             if (!error) {
                 _childrenItems = [NSMutableArray arrayWithCapacity:subFiles.count];
                 [subFiles enumerateObjectsUsingBlock:^(NSURL *  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                    FileAttributedItem *subFile = [[FileAttributedItem alloc] initWithPath:obj.path parentItem:self];
+                    FileAttributedItem *subFile = [[FileAttributedItem alloc] initWithPath:[obj.path lastPathComponent] parentItem:self];
                     [_childrenItems addObject:subFile];
                 }];
             }
