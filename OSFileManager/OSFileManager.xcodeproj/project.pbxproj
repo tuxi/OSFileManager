@@ -12,6 +12,10 @@
 		18DABA541F222BFC00A6F82E /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 18DABA521F222BFC00A6F82E /* Main.storyboard */; };
 		18DABA611F222C5300A6F82E /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 18DABA5D1F222C5300A6F82E /* AppDelegate.m */; };
 		18DABA621F222C5300A6F82E /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 18DABA5F1F222C5300A6F82E /* ViewController.m */; };
+		18DABA641F222D7500A6F82E /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 18DABA631F222D7500A6F82E /* MainMenu.xib */; };
+		18DABA671F223A5400A6F82E /* OSProgressCellView.m in Sources */ = {isa = PBXBuildFile; fileRef = 18DABA661F223A5400A6F82E /* OSProgressCellView.m */; };
+		18DABA6A1F223BB600A6F82E /* OSFileBrowerController.m in Sources */ = {isa = PBXBuildFile; fileRef = 18DABA691F223BB600A6F82E /* OSFileBrowerController.m */; };
+		18DABA6D1F22412200A6F82E /* FileAttributedItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 18DABA6C1F22412200A6F82E /* FileAttributedItem.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +28,13 @@
 		18DABA5D1F222C5300A6F82E /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		18DABA5E1F222C5300A6F82E /* ViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
 		18DABA5F1F222C5300A6F82E /* ViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		18DABA631F222D7500A6F82E /* MainMenu.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MainMenu.xib; sourceTree = "<group>"; };
+		18DABA651F223A5400A6F82E /* OSProgressCellView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSProgressCellView.h; sourceTree = "<group>"; };
+		18DABA661F223A5400A6F82E /* OSProgressCellView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSProgressCellView.m; sourceTree = "<group>"; };
+		18DABA681F223BB600A6F82E /* OSFileBrowerController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSFileBrowerController.h; sourceTree = "<group>"; };
+		18DABA691F223BB600A6F82E /* OSFileBrowerController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSFileBrowerController.m; sourceTree = "<group>"; };
+		18DABA6B1F22412200A6F82E /* FileAttributedItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileAttributedItem.h; sourceTree = "<group>"; };
+		18DABA6C1F22412200A6F82E /* FileAttributedItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileAttributedItem.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -81,6 +92,13 @@
 				18DABA5D1F222C5300A6F82E /* AppDelegate.m */,
 				18DABA5E1F222C5300A6F82E /* ViewController.h */,
 				18DABA5F1F222C5300A6F82E /* ViewController.m */,
+				18DABA651F223A5400A6F82E /* OSProgressCellView.h */,
+				18DABA661F223A5400A6F82E /* OSProgressCellView.m */,
+				18DABA681F223BB600A6F82E /* OSFileBrowerController.h */,
+				18DABA691F223BB600A6F82E /* OSFileBrowerController.m */,
+				18DABA6B1F22412200A6F82E /* FileAttributedItem.h */,
+				18DABA6C1F22412200A6F82E /* FileAttributedItem.m */,
+				18DABA631F222D7500A6F82E /* MainMenu.xib */,
 			);
 			path = Example;
 			sourceTree = "<group>";
@@ -152,6 +170,7 @@
 			files = (
 				18DABA511F222BFC00A6F82E /* Assets.xcassets in Resources */,
 				18DABA541F222BFC00A6F82E /* Main.storyboard in Resources */,
+				18DABA641F222D7500A6F82E /* MainMenu.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -163,8 +182,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				18DABA621F222C5300A6F82E /* ViewController.m in Sources */,
+				18DABA671F223A5400A6F82E /* OSProgressCellView.m in Sources */,
 				18DABA611F222C5300A6F82E /* AppDelegate.m in Sources */,
 				18DABA4C1F222BFC00A6F82E /* main.m in Sources */,
+				18DABA6D1F22412200A6F82E /* FileAttributedItem.m in Sources */,
+				18DABA6A1F223BB600A6F82E /* OSFileBrowerController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -278,6 +300,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = OSFileManager/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sey.OSFileManager;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -290,6 +313,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = OSFileManager/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sey.OSFileManager;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
