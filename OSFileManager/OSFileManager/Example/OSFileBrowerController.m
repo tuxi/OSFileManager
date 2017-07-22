@@ -8,6 +8,7 @@
 
 #import "OSFileBrowerController.h"
 #import "FileAttributedItem.h"
+#import "OSFileManager.h"
 
 @interface OSFileBrowerController ()
 
@@ -28,6 +29,14 @@
     
     [self.rightOutlineView registerForDraggedTypes:@[(NSString *)kUTTypeFileURL]];
     [self.rightOutlineView setDraggingSourceOperationMask:NSDragOperationEvery forLocal:YES];
+    
+    NSURL *srcURL = [NSURL URLWithString:@"/Users/mofeini/Desktop/trunk4"];
+    NSURL *dstURL = [NSURL URLWithString:@"/Users/mofeini/Desktop/trunk_wew_qqss232"];
+    [[OSFileManager defaultManager] copyItemAtURL:srcURL toURL:dstURL progress:^(float progress) {
+        NSLog(@"%f", progress);
+    } completionHandler:^(id<OSFileOperation> fileOperation, NSError *error) {
+        
+    }];
 }
 
 ////////////////////////////////////////////////////////////////////////

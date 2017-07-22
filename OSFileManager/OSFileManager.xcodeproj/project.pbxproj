@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		184314651F22D9B6009324AB /* OSFileManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 184314641F22D9B6009324AB /* OSFileManager.m */; };
 		18DABA4C1F222BFC00A6F82E /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 18DABA4B1F222BFC00A6F82E /* main.m */; };
 		18DABA511F222BFC00A6F82E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 18DABA501F222BFC00A6F82E /* Assets.xcassets */; };
 		18DABA541F222BFC00A6F82E /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 18DABA521F222BFC00A6F82E /* Main.storyboard */; };
@@ -19,6 +20,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		184314631F22D9B6009324AB /* OSFileManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSFileManager.h; sourceTree = "<group>"; };
+		184314641F22D9B6009324AB /* OSFileManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSFileManager.m; sourceTree = "<group>"; };
 		18DABA441F222BFC00A6F82E /* OSFileManager.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OSFileManager.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		18DABA4B1F222BFC00A6F82E /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		18DABA501F222BFC00A6F82E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -106,6 +109,8 @@
 		18DABA601F222C5300A6F82E /* OSFileManager */ = {
 			isa = PBXGroup;
 			children = (
+				184314631F22D9B6009324AB /* OSFileManager.h */,
+				184314641F22D9B6009324AB /* OSFileManager.m */,
 			);
 			path = OSFileManager;
 			sourceTree = "<group>";
@@ -185,6 +190,7 @@
 				18DABA671F223A5400A6F82E /* OSProgressCellView.m in Sources */,
 				18DABA611F222C5300A6F82E /* AppDelegate.m in Sources */,
 				18DABA4C1F222BFC00A6F82E /* main.m in Sources */,
+				184314651F22D9B6009324AB /* OSFileManager.m in Sources */,
 				18DABA6D1F22412200A6F82E /* FileAttributedItem.m in Sources */,
 				18DABA6A1F223BB600A6F82E /* OSFileBrowerController.m in Sources */,
 			);
@@ -338,6 +344,7 @@
 				18DABA5A1F222BFC00A6F82E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
