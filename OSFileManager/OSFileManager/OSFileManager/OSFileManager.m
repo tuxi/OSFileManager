@@ -353,7 +353,10 @@ int copyFileCallBack(
         _previousProgressTimeStamp = _startTimeStamp = [[NSDate date] timeIntervalSince1970];
         
         _copyfileState = copyfile_state_alloc();
+        [self willChangeValueForKey:@"isExecuting"];
+        self.executing = YES;
         self.writeState = OSFileWriteExecuting;
+        [self didChangeValueForKey:@"isExecuting"];
 
         copyfile_state_set(_copyfileState, COPYFILE_STATE_STATUS_CB, &copyFileCallBack);
         copyfile_state_set(_copyfileState, COPYFILE_STATE_STATUS_CTX, (__bridge void *)self);

@@ -8,9 +8,12 @@
 
 #import <Foundation/Foundation.h>
 #import <Cocoa/Cocoa.h>
+#import "OSFileOperationQueue.h"
 
 @interface OSFileBrowerController : NSObject <NSOutlineViewDelegate, NSOutlineViewDataSource>
 @property (weak) IBOutlet NSOutlineView *leftOutlineView;
 @property (weak) IBOutlet NSOutlineView *rightOutlineView;
+@property (weak) IBOutlet OSFileManager *fileManager;
+@property (weak) IBOutlet OSFileOperationQueue *fileOperationQueue;
 
 @end

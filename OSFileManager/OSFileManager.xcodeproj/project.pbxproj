@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		184314651F22D9B6009324AB /* OSFileManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 184314641F22D9B6009324AB /* OSFileManager.m */; };
+		1843146B1F236C03009324AB /* OSFileOperationQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = 1843146A1F236C03009324AB /* OSFileOperationQueue.m */; };
 		18DABA4C1F222BFC00A6F82E /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 18DABA4B1F222BFC00A6F82E /* main.m */; };
 		18DABA511F222BFC00A6F82E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 18DABA501F222BFC00A6F82E /* Assets.xcassets */; };
 		18DABA541F222BFC00A6F82E /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 18DABA521F222BFC00A6F82E /* Main.storyboard */; };
@@ -22,6 +23,8 @@
 /* Begin PBXFileReference section */
 		184314631F22D9B6009324AB /* OSFileManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSFileManager.h; sourceTree = "<group>"; };
 		184314641F22D9B6009324AB /* OSFileManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSFileManager.m; sourceTree = "<group>"; };
+		184314691F236C03009324AB /* OSFileOperationQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSFileOperationQueue.h; sourceTree = "<group>"; };
+		1843146A1F236C03009324AB /* OSFileOperationQueue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSFileOperationQueue.m; sourceTree = "<group>"; };
 		18DABA441F222BFC00A6F82E /* OSFileManager.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OSFileManager.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		18DABA4B1F222BFC00A6F82E /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		18DABA501F222BFC00A6F82E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -111,6 +114,8 @@
 			children = (
 				184314631F22D9B6009324AB /* OSFileManager.h */,
 				184314641F22D9B6009324AB /* OSFileManager.m */,
+				184314691F236C03009324AB /* OSFileOperationQueue.h */,
+				1843146A1F236C03009324AB /* OSFileOperationQueue.m */,
 			);
 			path = OSFileManager;
 			sourceTree = "<group>";
@@ -187,6 +192,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				18DABA621F222C5300A6F82E /* ViewController.m in Sources */,
+				1843146B1F236C03009324AB /* OSFileOperationQueue.m in Sources */,
 				18DABA671F223A5400A6F82E /* OSProgressCellView.m in Sources */,
 				18DABA611F222C5300A6F82E /* AppDelegate.m in Sources */,
 				18DABA4C1F222BFC00A6F82E /* main.m in Sources */,

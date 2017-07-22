@@ -1024,10 +1024,14 @@
         <customObject id="U9S-Un-lFg" customClass="AppDelegate"/>
         <customObject id="OLK-YX-Qqu" customClass="OSFileBrowerController">
             <connections>
+                <outlet property="fileManager" destination="85z-bv-1Qb" id="oyL-Ka-oNd"/>
+                <outlet property="fileOperationQueue" destination="Gql-go-ub9" id="NgG-Xk-ID7"/>
                 <outlet property="leftOutlineView" destination="fEg-LF-Qdq" id="iDq-v9-W1i"/>
                 <outlet property="rightOutlineView" destination="iar-c4-EIS" id="yKY-Z5-YxQ"/>
             </connections>
         </customObject>
+        <customObject id="85z-bv-1Qb" customClass="OSFileManager"/>
+        <customObject id="Gql-go-ub9" customClass="OSFileOperationQueue"/>
     </objects>
     <resources>
         <image name="NSMultipleDocuments" width="32" height="32"/>
