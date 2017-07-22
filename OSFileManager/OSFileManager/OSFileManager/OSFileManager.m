@@ -11,12 +11,14 @@
 
 #define TIME_REMAINING_SMOOTHING_FACTOR 0.2f
 
+static void *FileProgressObserverContext = &FileProgressObserverContext;
+
 @interface OSFileManager ()
 
 @property (nonatomic, strong) NSMutableArray *operations;
 @property (nonatomic, strong) NSOperationQueue *operationQueue;
 @property (nonatomic, strong) NSArrayController *operationsController;
-@property (nonatomic, strong) OSFileOperationCompletionHandler completionHandler;
+@property (nonatomic, strong) NSProgress *totalProgress;
 
 @end
 
@@ -24,13 +26,14 @@
 
 @property (nonatomic, copy) NSURL *sourceURL;
 @property (nonatomic, copy) NSURL *dstURL;
-@property (nonatomic, strong) NSNumber *sourceBytes;
-@property (nonatomic, strong) NSNumber *copiedBytes;
-@property (nonatomic, strong) NSNumber *progress;
-@property (nonatomic, strong) NSNumber *secondsRemaining;
+@property (nonatomic, assign) OSFileInteger sourceTotalBytes;
+@property (nonatomic, assign) OSFileInteger receivedCopiedBytes;
+@property (nonatomic, assign) NSTimeInterval secondsRemaining;
 @property (nonatomic, strong) NSError *error;
 @property (nonatomic, copy, readonly) NSString *fileName;
 @property (nonatomic, strong) NSFileManager *fileManager;
+@property (nonatomic, strong) NSMutableArray *enqueuedRequests;
+@property (nonatomic, strong) NSProgress *progress;
 
 @property (nonatomic, copy) OSFileOperationCompletionHandler completionHandler;
 @property (nonatomic, copy) OSFileOperationProgress progressBlock;
@@ -61,13 +64,6 @@ int copyFileCallBack(
     return _instance;
 }
 
-+ (NSSet<NSString *> *)keyPathsForValuesAffectingValueForKey:(NSString *)key {
-    NSSet *keyPaths = [super keyPathsForValuesAffectingValueForKey:key];
-    if ([key isEqualToString:@"totalProgress"]) {
-        keyPaths = [keyPaths setByAddingObjectsFromArray:@[@"totalSourceBytes", @"totalCopiedBytes"]];
-    }
-    return keyPaths;
-}
 
 - (instancetype)init
 {
@@ -80,12 +76,18 @@ int copyFileCallBack(
         
         [self bind:@"totalSourceBytes"
           toObject:self.operationsController
-       withKeyPath:@"arrangedObjects.@sum.sourceBytes"
+       withKeyPath:@"arrangedObjects.@sum.sourceTotalBytes"
            options:nil];
         [self bind:@"totalCopiedBytes"
           toObject:self.operationsController
-       withKeyPath:@"arrangedObjects.@sum.copiedBytes"
+       withKeyPath:@"arrangedObjects.@sum.receivedCopiedBytes"
            options:nil];
+        
+        _totalProgress = [NSProgress progressWithTotalUnitCount:0];
+        [_totalProgress addObserver:self
+                        forKeyPath:NSStringFromSelector(@selector(fractionCompleted))
+                           options:NSKeyValueObservingOptionInitial
+                           context:FileProgressObserverContext];
         
     }
     return self;
@@ -112,12 +114,63 @@ int copyFileCallBack(
     return [self.operations filteredArrayUsingPredicate:predicate].count;
 }
 
-- (NSNumber *)totalProgress {
+- (NSNumber *)totalProgressValue {
     float progress = 0.0;
     if (self.totalSourceBytes.unsignedLongLongValue > 0) {
         progress = self.totalCopiedBytes.doubleValue / self.totalSourceBytes.doubleValue;
     }
     return @(progress);
+}
+
+////////////////////////////////////////////////////////////////////////
+#pragma mark -
+////////////////////////////////////////////////////////////////////////
+
++ (NSSet<NSString *> *)keyPathsForValuesAffectingValueForKey:(NSString *)key {
+    NSSet *keyPaths = [super keyPathsForValuesAffectingValueForKey:key];
+    if ([key isEqualToString:NSStringFromSelector(@selector(totalProgressValue))]) {
+        keyPaths = [keyPaths setByAddingObjectsFromArray:@[
+                                                           NSStringFromSelector(@selector(totalSourceBytes)),
+                                                           NSStringFromSelector(@selector(totalCopiedBytes))]];
+    }
+    return keyPaths;
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
+    if (context == FileProgressObserverContext && object == self.totalProgress) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (self.totalProgressBlock) {
+                self.totalProgressBlock(self.totalProgress);
+            }
+        });
+    } else {
+        [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+    }
+}
+
+- (void)dealloc {
+    [self.totalProgress removeObserver:self
+                            forKeyPath:NSStringFromSelector(@selector(fractionCompleted))
+                               context:FileProgressObserverContext];
+}
+
+- (void)resetProgress {
+    BOOL hasActiveFlag = [self operations].count;
+    if (hasActiveFlag == NO) {
+        @try {
+            [self.totalProgress removeObserver:self forKeyPath:NSStringFromSelector(@selector(fractionCompleted))];
+        } @catch (NSException *exception) {
+            NSLog(@"Error: Repeated removeObserver(keyPath = fractionCompleted)");
+        } @finally {
+            
+        }
+        
+        self.totalProgress = [NSProgress progressWithTotalUnitCount:0];
+        [self.totalProgress addObserver:self
+                            forKeyPath:NSStringFromSelector(@selector(fractionCompleted))
+                               options:NSKeyValueObservingOptionInitial
+                               context:FileProgressObserverContext];
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -149,10 +202,15 @@ int copyFileCallBack(
              progress:(OSFileOperationProgress)progress
     completionHandler:(OSFileOperationCompletionHandler)handler {
     
+    [self resetProgress];
+    self.totalProgress.totalUnitCount++;
+    [self.totalProgress becomeCurrentWithPendingUnitCount:1];
     OSFileOperation *fileOperation = [[OSFileOperation alloc] initWithSourceURL:srcURL
                                                                          desURL:dstURL
                                                                        progress:progress
                                                               completionHandler:handler];
+    [self.totalProgress resignCurrent];
+    
     if (fileOperation.isFinished) {
         return;
     }
@@ -172,10 +230,16 @@ int copyFileCallBack(
              progress:(OSFileOperationProgress)progress
     completionHandler:(OSFileOperationCompletionHandler)handler {
     
+    [self resetProgress];
+    
+    self.totalProgress.totalUnitCount++;
+    [self.totalProgress becomeCurrentWithPendingUnitCount:1];
     OSFileOperation *fileOperation = [[OSFileOperation alloc] initWithSourceURL:srcURL
                                                                          desURL:dstURL
                                                                        progress:progress
                                                               completionHandler:handler];
+    [self.totalProgress resignCurrent];
+    
     if (fileOperation.isFinished) {
         return;
     }
@@ -223,15 +287,27 @@ int copyFileCallBack(
     if (self = [super init]) {
         _sourceURL = sourceURL;
         _dstURL = desURL;
-        _sourceBytes = @0;
-        _copiedBytes = @0;
-        _progress = @0;
-        _secondsRemaining = @0;
+        _sourceTotalBytes = 0;
+        _receivedCopiedBytes = 0;
+        _secondsRemaining = 0;
         _fileManager = [NSFileManager new];
         _completionHandler = completionHandler;
         _progressBlock = progress;
+        
+        NSProgress *naviteProgress = [[NSProgress alloc] initWithParent:[NSProgress currentProgress]
+                                                         userInfo:nil];
+        naviteProgress.kind = NSProgressKindFile;
+        [naviteProgress setUserInfoObject:NSProgressFileOperationKindKey
+                             forKey:NSProgressFileOperationKindDownloading];
+        [naviteProgress setUserInfoObject:self.sourceURL forKey:NSStringFromSelector(@selector(sourceURL))];
+        naviteProgress.cancellable = NO;
+        naviteProgress.pausable = NO;
+        naviteProgress.totalUnitCount = NSURLSessionTransferSizeUnknown;
+        naviteProgress.completedUnitCount = 0;
+        self.progress = naviteProgress;
+        
         NSError *error = nil;
-        _sourceBytes = [self caclulateFileToatalSizeByFilePath:_sourceURL.path error:&error];
+        self.sourceTotalBytes = [self caclulateFileToatalSizeByFilePath:_sourceURL.path error:&error];
         if (error) {
             [self performCompletionWithError:error];
         }
@@ -242,10 +318,12 @@ int copyFileCallBack(
 + (NSSet<NSString *> *)keyPathsForValuesAffectingValueForKey:(NSString *)key {
     NSSet *keyPaths = [super keyPathsForValuesAffectingValueForKey:key];
     if ([key isEqualToString:NSStringFromSelector(@selector(progress))]) {
-        keyPaths = [keyPaths setByAddingObjectsFromArray:@[@"sourceBytes", @"copiedBytes"]];
+        keyPaths = [keyPaths setByAddingObjectsFromArray:@[
+                                                           NSStringFromSelector(@selector(sourceTotalBytes)),
+                                                           NSStringFromSelector(@selector(receivedCopiedBytes))]];
     }
     else if ([key isEqualToString:NSStringFromSelector(@selector(fileName))]) {
-        keyPaths = [keyPaths setByAddingObject:@"sourceURL"];
+        keyPaths = [keyPaths setByAddingObject:NSStringFromSelector(@selector(sourceURL))];
     }
     return keyPaths;
     
@@ -271,13 +349,6 @@ int copyFileCallBack(
     return self.sourceURL.lastPathComponent;
 }
 
-- (NSNumber *)progress {
-    float progress = 0.0;
-    if (self.sourceBytes.unsignedLongLongValue > 0) {
-        progress = (self.copiedBytes.unsignedIntegerValue / self.sourceBytes.unsignedIntegerValue) * 1.0;
-    }
-    return _progress = @(progress);
-}
 
 - (void)start {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
@@ -292,9 +363,9 @@ int copyFileCallBack(
         // 执行copy文件，此方法会阻塞当前线程，直到文件拷贝完成为止
         int resCode = copyfile(scourcePath, dstPath, _copyfileState, [self flags]);
         // copy完成后，若进度不为1，再次检测下本地的文件
-        if (![self.progress isEqualToNumber:@(1.0)]) {
+        if (self.progress.fractionCompleted != 1.0) {
             NSError *error = nil;
-           self.copiedBytes = [self caclulateFileToatalSizeByFilePath:_dstURL.path error:&error];
+           self.receivedCopiedBytes = [self caclulateFileToatalSizeByFilePath:_dstURL.path error:&error];
             if (!error) {
                 [self updateProgress];
             }
@@ -302,7 +373,7 @@ int copyFileCallBack(
         
         if (resCode != 0 && ![self isCancelled]) {
             NSString *errorMessage = [NSString stringWithCString:strerror(errno) encoding:NSUTF8StringEncoding];
-            error = [NSError errorWithDomain:NSCocoaErrorDomain code:0 userInfo:@{NSFilePathErrorKey: errorMessage}];
+            error = [NSError errorWithDomain:NSCocoaErrorDomain code:resCode userInfo:@{NSFilePathErrorKey: errorMessage}];
             NSLog(@"%@", errorMessage);
         }
         copyfile_state_free(_copyfileState);
@@ -325,7 +396,7 @@ int copyFileCallBack(
     [self performCompletionWithError:removeError];
 }
 
-- (NSNumber *)caclulateFileToatalSizeByFilePath:(NSString *)filePath error:(NSError **)error {
+- (OSFileInteger)caclulateFileToatalSizeByFilePath:(NSString *)filePath error:(NSError **)error {
     NSError *attributesError = nil;
     NSDictionary *attributeDict = [_fileManager attributesOfItemAtPath:filePath error:&attributesError];
     if (attributesError) {
@@ -333,7 +404,7 @@ int copyFileCallBack(
             *error = attributesError;
         }
         NSLog(@"Error: %@", attributesError);
-        return @(-1);
+        return -1;
     }
     
     BOOL isExist = NO, isDirectory = NO;
@@ -353,7 +424,7 @@ int copyFileCallBack(
         totalSize = [attributeDict fileSize];
     }
     
-    return @(totalSize);
+    return totalSize;
 }
 
 - (void)performCompletionWithError:(NSError *)error {
@@ -399,7 +470,7 @@ int copyFileCallBack(int what, int stage, copyfile_state_t state, const char *pa
                     off_t receivedCopiedBytes = 0;
                     const int code = copyfile_state_get(state, COPYFILE_STATE_COPIED, &receivedCopiedBytes);
                     if (code == 0) {
-                        [self updateStateWithCopiedBytes:receivedCopiedBytes path:@(path)];
+                        [self updateStateWithCopiedBytes:receivedCopiedBytes sourcePath:@(path)];
                         [self updateProgress];
                     }
                     break;
@@ -418,15 +489,15 @@ int copyFileCallBack(int what, int stage, copyfile_state_t state, const char *pa
     return COPYFILE_CONTINUE;
 }
 
-- (void)updateStateWithCopiedBytes:(OSFileInteger)receivedCopiedBytes path:(NSString *)source {
-    if (![_previousOperationFilePath isEqualToString:source]) {
+- (void)updateStateWithCopiedBytes:(OSFileInteger)receivedCopiedBytes sourcePath:(NSString *)sourcePath {
+    if (![_previousOperationFilePath isEqualToString:sourcePath]) {
         _previousReceivedCopiedBytes = 0;
-        _previousOperationFilePath = [source copy];
+        _previousOperationFilePath = [sourcePath copy];
     }
     
     // copiedBytesOffset 计算每次copy了多少
     OSFileInteger copiedBytesOffset = receivedCopiedBytes - _previousReceivedCopiedBytes;
-    _copiedBytes = @(_copiedBytes.unsignedLongLongValue + copiedBytesOffset);
+    self.receivedCopiedBytes = _receivedCopiedBytes + copiedBytesOffset;
     
     _previousReceivedCopiedBytes = receivedCopiedBytes;
     
@@ -435,16 +506,30 @@ int copyFileCallBack(int what, int stage, copyfile_state_t state, const char *pa
     NSTimeInterval previousTransferRate = copiedBytesOffset / (now - _previousProgressTimeStamp);
     NSTimeInterval overallTransferRate = receivedCopiedBytes / (now - _startTimeStamp);
     NSTimeInterval averageTransferRate = TIME_REMAINING_SMOOTHING_FACTOR * previousTransferRate + ((1 - TIME_REMAINING_SMOOTHING_FACTOR) * overallTransferRate);
-    _secondsRemaining = @((_sourceBytes.unsignedLongLongValue - receivedCopiedBytes) / averageTransferRate);
+    self.secondsRemaining = (_sourceTotalBytes - receivedCopiedBytes) / averageTransferRate;
 }
 
 - (void)updateProgress {
     if (_progressBlock) {
-        float progress = [self.progress floatValue];
-        _progressBlock(progress);
+        _progressBlock(self.progress);
     }
 }
 
+- (void)setSourceTotalBytes:(OSFileInteger )sourceTotalBytes {
+    _sourceTotalBytes = sourceTotalBytes;
+    if (self.progress && sourceTotalBytes > 0) {
+        self.progress.totalUnitCount = sourceTotalBytes;
+    }
+}
+
+- (void)setReceivedCopiedBytes:(OSFileInteger)receivedCopiedBytes {
+    _receivedCopiedBytes = receivedCopiedBytes;
+    if (receivedCopiedBytes) {
+        if (self.progress && self.sourceTotalBytes > 0) {
+            self.progress.completedUnitCount = receivedCopiedBytes;
+        }
+    }
+}
 
 - (NSString *)description {
     return [NSString stringWithFormat:@"OSFileOperation:\nsourceURL:%@\ndstURL:%@", self.sourceURL, self.dstURL];

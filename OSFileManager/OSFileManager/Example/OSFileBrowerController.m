@@ -21,6 +21,26 @@
 
 @implementation OSFileBrowerController
 
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        NSURL *srcURL = [NSURL fileURLWithPath:@"/Users/mofeini/Desktop/trunk4"];
+        NSURL *dstURL = [NSURL fileURLWithPath:@"/Users/mofeini/Desktop/trunk5"];
+        [[OSFileManager defaultManager] copyItemAtURL:srcURL toURL:dstURL progress:^(NSProgress *progress) {
+            
+            NSLog(@"%f", progress.fractionCompleted);
+        } completionHandler:^(id<OSFileOperation> fileOperation, NSError *error) {
+            
+        }];
+        
+        [OSFileManager defaultManager].totalProgressBlock = ^(NSProgress *progress) {
+            NSLog(@"%f", progress.fractionCompleted);
+        };
+    }
+    return self;
+}
+
 - (void)awakeFromNib {
     [super awakeFromNib];
     // 对leftOutlineView进行注册拖放事件的监听
@@ -30,13 +50,6 @@
     [self.rightOutlineView registerForDraggedTypes:@[(NSString *)kUTTypeFileURL]];
     [self.rightOutlineView setDraggingSourceOperationMask:NSDragOperationEvery forLocal:YES];
     
-    NSURL *srcURL = [NSURL fileURLWithPath:@"/Users/mofeini/Desktop/宝宝照片"];
-    NSURL *dstURL = [NSURL fileURLWithPath:@"/Users/mofeini/Desktop/宝宝照片11"];
-    [[OSFileManager defaultManager] copyItemAtURL:srcURL toURL:dstURL progress:^(float progress) {
-        NSLog(@"%f", progress);
-    } completionHandler:^(id<OSFileOperation> fileOperation, NSError *error) {
-        
-    }];
 }
 
 ////////////////////////////////////////////////////////////////////////

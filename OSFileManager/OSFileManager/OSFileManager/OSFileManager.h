@@ -13,15 +13,16 @@
 
 typedef unsigned long long OSFileInteger;
 typedef void(^OSFileOperationCompletionHandler)(id<OSFileOperation> fileOperation, NSError *error);
-typedef void(^OSFileOperationProgress)(float progress);
+typedef void(^OSFileOperationProgress)(NSProgress *progress);
 
 @interface OSFileManager : NSObject
 
 @property (nonatomic, assign) NSInteger maxConcurrentOperationCount;
 @property (nonatomic, assign) NSUInteger pendingOperationCount;
-@property (nonatomic, strong) NSNumber *totalProgress;
+@property (nonatomic, strong) NSNumber *totalProgressValue;
 @property (nonatomic, strong) NSNumber *totalSourceBytes;
 @property (nonatomic, strong) NSNumber *totalCopiedBytes;
+@property (nonatomic, strong) OSFileOperationProgress totalProgressBlock;
 
 + (OSFileManager *)defaultManager;
 
@@ -37,13 +38,13 @@ typedef void(^OSFileOperationProgress)(float progress);
 
 @property (nonatomic, copy) NSURL *sourceURL;
 @property (nonatomic, copy) NSURL *dstURL;
-@property (nonatomic, strong) NSNumber *sourceBytes;
-@property (nonatomic, strong) NSNumber *copiedBytes;
-@property (nonatomic, readonly) NSNumber *progress;
-@property (nonatomic, strong) NSNumber *secondsRemaining;
+@property (nonatomic, assign) OSFileInteger sourceTotalBytes;
+@property (nonatomic, assign) OSFileInteger receivedCopiedBytes;
+@property (nonatomic, assign) NSTimeInterval secondsRemaining;
 @property (nonatomic, strong) NSError *error;
 @property (nonatomic, copy, readonly) NSString *fileName;
 @property (nonatomic, readonly, assign) BOOL isCancelled;
+@property (nonatomic, strong) NSProgress *progress;
 
 - (instancetype)initWithSourceURL:(NSURL *)sourceURL desURL:(NSURL *)desURL progress:(OSFileOperationProgress)progress completionHandler:(OSFileOperationCompletionHandler)completionHandler;
 - (void)cancel;
