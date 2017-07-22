@@ -15,7 +15,7 @@ static void *FileProgressObserverContext = &FileProgressObserverContext;
 
 @interface OSFileManager ()
 
-@property (nonatomic, strong) NSMutableArray *operations;
+@property (nonatomic, strong) NSMutableArray<id<OSFileOperation>> *operations;
 @property (nonatomic, strong) NSOperationQueue *operationQueue;
 @property (nonatomic, strong) NSArrayController *operationsController;
 @property (nonatomic, strong) NSProgress *totalProgress;
@@ -34,6 +34,12 @@ static void *FileProgressObserverContext = &FileProgressObserverContext;
 @property (nonatomic, strong) NSFileManager *fileManager;
 @property (nonatomic, strong) NSMutableArray *enqueuedRequests;
 @property (nonatomic, strong) NSProgress *progress;
+
+@property (nonatomic, getter = isFinished) BOOL finished;
+@property (nonatomic, getter = isExecuting) BOOL executing;
+@property (nonatomic, getter = isCancelled) BOOL cancelled;
+
+@property (nonatomic, assign) OSFileWriteStatus writeState;
 
 @property (nonatomic, copy) OSFileOperationCompletionHandler completionHandler;
 @property (nonatomic, copy) OSFileOperationProgress progressBlock;
@@ -178,18 +184,18 @@ int copyFileCallBack(
 ////////////////////////////////////////////////////////////////////////
 
 - (void)addOperationsObject:(OSFileOperation *)operation {
-    [self.operations addObject:operation];
+    [_operations addObject:operation];
     [_operationQueue addOperation:operation];
 }
 - (void)addOperations:(NSArray *)operations {
-    [self.operations addObjectsFromArray:operations];
+    [_operations addObjectsFromArray:operations];
     [_operationQueue addOperations:operations waitUntilFinished:NO];
 }
 - (void)removeOperationsObject:(OSFileOperation *)operation {
-    [self.operations removeObject:operation];
+    [_operations removeObject:operation];
 }
 - (void)removeObjectFromOperationsAtIndex:(NSUInteger)index {
-    [self.operations removeObjectAtIndex:index];
+    [_operations removeObjectAtIndex:index];
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -271,14 +277,16 @@ int copyFileCallBack(
 @implementation OSFileOperation
 {
     copyfile_state_t _copyfileState;
-    BOOL _isFinished;
-    BOOL _isExecuting;
     NSTimeInterval _startTimeStamp;
     NSTimeInterval _previousProgressTimeStamp;
     NSString *_previousOperationFilePath;
     OSFileInteger _previousReceivedCopiedBytes;
     
 }
+
+@synthesize executing = _executing;
+@synthesize finished = _finished;
+@synthesize cancelled = _cancelled;
 
 - (instancetype)initWithSourceURL:(NSURL *)sourceURL
                            desURL:(NSURL *)desURL
@@ -308,8 +316,9 @@ int copyFileCallBack(
         
         NSError *error = nil;
         self.sourceTotalBytes = [self caclulateFileToatalSizeByFilePath:_sourceURL.path error:&error];
+        self.error = error;
         if (error) {
-            [self performCompletionWithError:error];
+            [self finish];
         }
     }
     return self;
@@ -333,17 +342,6 @@ int copyFileCallBack(
     return YES;
 }
 
-- (BOOL)isExecuting {
-    return _isExecuting;
-}
-
-- (BOOL)isFinished {
-    return _isFinished;
-}
-
-- (BOOL)isCancelled {
-  return [super isCancelled];
-}
 
 - (NSString *)fileName {
     return self.sourceURL.lastPathComponent;
@@ -353,17 +351,18 @@ int copyFileCallBack(
 - (void)start {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
         _previousProgressTimeStamp = _startTimeStamp = [[NSDate date] timeIntervalSince1970];
+        
         _copyfileState = copyfile_state_alloc();
-                NSError *error = nil;
+        self.writeState = OSFileWriteExecuting;
+
         copyfile_state_set(_copyfileState, COPYFILE_STATE_STATUS_CB, &copyFileCallBack);
         copyfile_state_set(_copyfileState, COPYFILE_STATE_STATUS_CTX, (__bridge void *)self);
-        
         const char *scourcePath = self.sourceURL.path.UTF8String;
         const char *dstPath = self.dstURL.path.UTF8String;
         // 执行copy文件，此方法会阻塞当前线程，直到文件拷贝完成为止
         int resCode = copyfile(scourcePath, dstPath, _copyfileState, [self flags]);
         // copy完成后，若进度不为1，再次检测下本地的文件
-        if (self.progress.fractionCompleted != 1.0) {
+        if (self.progress.fractionCompleted != 1.0 && resCode == 0) {
             NSError *error = nil;
            self.receivedCopiedBytes = [self caclulateFileToatalSizeByFilePath:_dstURL.path error:&error];
             if (!error) {
@@ -373,27 +372,39 @@ int copyFileCallBack(
         
         if (resCode != 0 && ![self isCancelled]) {
             NSString *errorMessage = [NSString stringWithCString:strerror(errno) encoding:NSUTF8StringEncoding];
-            error = [NSError errorWithDomain:NSCocoaErrorDomain code:resCode userInfo:@{NSFilePathErrorKey: errorMessage}];
+            self.error = [NSError errorWithDomain:NSCocoaErrorDomain code:resCode userInfo:@{NSFilePathErrorKey: errorMessage}];
             NSLog(@"%@", errorMessage);
         }
         copyfile_state_free(_copyfileState);
-        [self performCompletionWithError:error];
+        [self finish];
     });
 }
 
 - (void)cancel {
-    [super cancel];
-    
-    BOOL isExist = [_fileManager fileExistsAtPath:self.dstURL.path];
-    NSError *removeError = nil;
-    if (isExist) {
-        [_fileManager removeItemAtURL:self.dstURL error:&removeError];
-        if (removeError) {
-            NSLog(@"Error: cancel copy or move error:%@", removeError.localizedDescription);
+    @synchronized (self) {
+        // 当非取消状态时，取消请求任务，并标记为取消
+        if (self.isCancelled || self.isFinished) {
+            [self finish];
+        } else {
+            [self willChangeValueForKey:@"isCancelled"];
+            self.cancelled = YES;
+            BOOL isExist = [_fileManager fileExistsAtPath:self.dstURL.path];
+            if (isExist) {
+                NSError *removeError = nil;
+                [_fileManager removeItemAtURL:self.dstURL error:&removeError];
+                if (removeError) {
+                    NSLog(@"Error: cancel copy or move error:%@", removeError.localizedDescription);
+                }
+                self.error = removeError;
+            }
+            
+            [self finish];
+            [self didChangeValueForKey:@"isCancelled"];
+            
         }
     }
     
-    [self performCompletionWithError:removeError];
+    
 }
 
 - (OSFileInteger)caclulateFileToatalSizeByFilePath:(NSString *)filePath error:(NSError **)error {
@@ -427,20 +438,26 @@ int copyFileCallBack(
     return totalSize;
 }
 
-- (void)performCompletionWithError:(NSError *)error {
+- (void)finish {
     @synchronized (self) {
-        self.error = error;
-        [self willChangeValueForKey:@"_isExecuting"];
-        _isExecuting = YES;
-        [self didChangeValueForKey:@"_isExecuting"];
-        [self willChangeValueForKey:@"_isFinished"];
-        _isFinished = YES;
-        [self didChangeValueForKey:@"_isFinished"];
-        
-        if ([self isCancelled]) {
+        if (self.isExecuting && !self.isFinished) {
+            [self willChangeValueForKey:@"isExecuting"];
+            [self willChangeValueForKey:@"isFinished"];
+            self.executing = NO;
+            self.finished = YES;
+            if (self.error) {
+                self.writeState = OSFileWriteFailure;
+            } else {
+                self.writeState = OSFileWriteFinished;
+            }
+            [self didChangeValueForKey:@"isFinished"];
+            [self didChangeValueForKey:@"isExecuting"];
+        } else if ([self isCancelled]) {
             self.error = [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorCancelled userInfo:nil];
+            self.writeState = OSFileWriteCanceled;
         }
-        self.completionHandler(self, error);
+        
+        self.completionHandler(self, self.error);
     }
 }
 

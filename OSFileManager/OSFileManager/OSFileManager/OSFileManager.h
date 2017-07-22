@@ -9,6 +9,14 @@
 #import <Cocoa/Cocoa.h>
 
 
+typedef NS_ENUM(NSInteger, OSFileWriteStatus) {
+    OSFileWriteCanceled,          // 取消请求
+    OSFileWriteWaiting,          // 等待中
+    OSFileWriteExecuting,       // 正在执行该请求中
+    OSFileWriteFinished,         // 请求完成
+    OSFileWriteFailure        // 请求失败
+};
+
 @protocol OSFileOperation;
 
 typedef unsigned long long OSFileInteger;
@@ -23,6 +31,7 @@ typedef void(^OSFileOperationProgress)(NSProgress *progress);
 @property (nonatomic, strong) NSNumber *totalSourceBytes;
 @property (nonatomic, strong) NSNumber *totalCopiedBytes;
 @property (nonatomic, strong) OSFileOperationProgress totalProgressBlock;
+@property (nonatomic, strong, readonly) NSArray<id<OSFileOperation>> *operations;
 
 + (OSFileManager *)defaultManager;
 
@@ -45,8 +54,12 @@ typedef void(^OSFileOperationProgress)(NSProgress *progress);
 @property (nonatomic, copy, readonly) NSString *fileName;
 @property (nonatomic, readonly, assign) BOOL isCancelled;
 @property (nonatomic, strong) NSProgress *progress;
+@property (nonatomic, assign) OSFileWriteStatus writeState;
 
-- (instancetype)initWithSourceURL:(NSURL *)sourceURL desURL:(NSURL *)desURL progress:(OSFileOperationProgress)progress completionHandler:(OSFileOperationCompletionHandler)completionHandler;
+- (instancetype)initWithSourceURL:(NSURL *)sourceURL
+                           desURL:(NSURL *)desURL
+                         progress:(OSFileOperationProgress)progress
+                completionHandler:(OSFileOperationCompletionHandler)completionHandler;
 - (void)cancel;
 
 @end
