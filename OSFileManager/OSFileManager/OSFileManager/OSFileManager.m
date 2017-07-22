@@ -32,7 +32,6 @@ static void *FileProgressObserverContext = &FileProgressObserverContext;
 @property (nonatomic, strong) NSError *error;
 @property (nonatomic, copy, readonly) NSString *fileName;
 @property (nonatomic, strong) NSFileManager *fileManager;
-@property (nonatomic, strong) NSMutableArray *enqueuedRequests;
 @property (nonatomic, strong) NSProgress *progress;
 
 @property (nonatomic, getter = isFinished) BOOL finished;
@@ -40,6 +39,7 @@ static void *FileProgressObserverContext = &FileProgressObserverContext;
 @property (nonatomic, getter = isCancelled) BOOL cancelled;
 
 @property (nonatomic, assign) OSFileWriteStatus writeState;
+@property (nonatomic, strong) NSNumber *progressValue;
 
 @property (nonatomic, copy) OSFileOperationCompletionHandler completionHandler;
 @property (nonatomic, copy) OSFileOperationProgress progressBlock;
@@ -450,6 +450,7 @@ int copyFileCallBack(
             self.finished = YES;
             if (self.error) {
                 self.writeState = OSFileWriteFailure;
+                self.progress.completedUnitCount = self.progress.totalUnitCount;
             } else {
                 self.writeState = OSFileWriteFinished;
             }
@@ -458,6 +459,7 @@ int copyFileCallBack(
         } else if ([self isCancelled]) {
             self.error = [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorCancelled userInfo:nil];
             self.writeState = OSFileWriteCanceled;
+            self.progress.completedUnitCount = self.progress.totalUnitCount;
         }
         
         self.completionHandler(self, self.error);
@@ -530,6 +532,7 @@ int copyFileCallBack(int what, int stage, copyfile_state_t state, const char *pa
 }
 
 - (void)updateProgress {
+    _progressValue = @(self.progress.fractionCompleted);
     if (_progressBlock) {
         _progressBlock(self.progress);
     }

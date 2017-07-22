@@ -7,7 +7,11 @@
 //
 
 #import <Cocoa/Cocoa.h>
+#import "OSFileManager.h"
 
 @interface OSProgressCellView : NSTableCellView
+
+@property (nonatomic, strong) id<OSFileOperation> operationModel;
+@property (nonatomic, copy) NSString *progressString;
 
 @end

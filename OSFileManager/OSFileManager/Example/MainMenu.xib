@@ -787,13 +787,13 @@
                                         <rect key="frame" x="226" y="0.0" width="214" height="230"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <subviews>
-                                            <scrollView autohidesScrollers="YES" horizontalLineScroll="26" horizontalPageScroll="10" verticalLineScroll="26" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Wby-fz-nyf">
+                                            <scrollView autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Wby-fz-nyf">
                                                 <rect key="frame" x="0.0" y="0.0" width="214" height="230"/>
                                                 <clipView key="contentView" drawsBackground="NO" id="ARR-yI-WAg">
                                                     <rect key="frame" x="1" y="1" width="212" height="228"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <subviews>
-                                                        <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="sourceList" multipleSelection="NO" autosaveColumns="NO" rowHeight="24" rowSizeStyle="automatic" viewBased="YES" indentationPerLevel="16" outlineTableColumn="5dm-hB-0dA" id="iar-c4-EIS">
+                                                        <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="sourceList" multipleSelection="NO" autosaveColumns="NO" rowSizeStyle="automatic" viewBased="YES" indentationPerLevel="16" outlineTableColumn="5dm-hB-0dA" id="iar-c4-EIS">
                                                             <rect key="frame" x="0.0" y="0.0" width="212" height="228"/>
                                                             <autoresizingMask key="autoresizingMask"/>
                                                             <size key="intercellSpacing" width="3" height="2"/>
@@ -864,7 +864,7 @@
                                                     <nil key="backgroundColor"/>
                                                 </clipView>
                                                 <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="EyC-tf-qqH">
-                                                    <rect key="frame" x="1" y="381.5" width="147.5" height="16"/>
+                                                    <rect key="frame" x="1" y="382" width="148" height="16"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                 </scroller>
                                                 <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="Uph-i2-Cfj">
@@ -916,7 +916,7 @@
                         <rect key="frame" x="-1" y="0.0" width="497" height="77"/>
                         <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="x0f-cl-z3G">
                             <rect key="frame" x="0.0" y="0.0" width="497" height="77"/>
-                            <autoresizingMask key="autoresizingMask"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
                                 <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnReordering="NO" columnSelection="YES" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" rowHeight="71" rowSizeStyle="automatic" viewBased="YES" id="ubT-z7-tDF">
                                     <rect key="frame" x="0.0" y="0.0" width="497" height="77"/>
@@ -957,6 +957,13 @@
                                                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                             </textFieldCell>
+                                                            <connections>
+                                                                <binding destination="Q85-Ys-oit" name="displayPatternValue1" keyPath="self.operationModel.fileName" id="Ml8-lD-Nnd">
+                                                                    <dictionary key="options">
+                                                                        <string key="NSDisplayPattern">%{value1}@</string>
+                                                                    </dictionary>
+                                                                </binding>
+                                                            </connections>
                                                         </textField>
                                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PZs-Wk-Hav">
                                                             <rect key="frame" x="68" y="6" width="384" height="14"/>
@@ -965,9 +972,15 @@
                                                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                             </textFieldCell>
+                                                            <connections>
+                                                                <binding destination="Q85-Ys-oit" name="value" keyPath="self.progressString" id="Jwi-NP-bCW"/>
+                                                            </connections>
                                                         </textField>
                                                         <progressIndicator maxValue="100" controlSize="small" style="bar" translatesAutoresizingMaskIntoConstraints="NO" id="SqA-Yv-b2l">
                                                             <rect key="frame" x="70" y="28" width="380" height="12"/>
+                                                            <connections>
+                                                                <binding destination="Q85-Ys-oit" name="value" keyPath="self.operationModel.progressValue" id="lf5-EQ-98L"/>
+                                                            </connections>
                                                         </progressIndicator>
                                                         <button verticalHuggingPriority="750" placeholderIntrinsicWidth="16" placeholderIntrinsicHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="J4G-SL-Byq">
                                                             <rect key="frame" x="458" y="25" width="16" height="18"/>
@@ -979,6 +992,9 @@
                                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                 <font key="font" metaFont="system"/>
                                                             </buttonCell>
+                                                            <connections>
+                                                                <binding destination="Q85-Ys-oit" name="target" keyPath="self" id="CDe-el-rsU"/>
+                                                            </connections>
                                                         </button>
                                                     </subviews>
                                                     <constraints>
@@ -1000,6 +1016,9 @@
                                             </prototypeCellViews>
                                         </tableColumn>
                                     </tableColumns>
+                                    <connections>
+                                        <binding destination="0nh-Er-jzX" name="content" keyPath="self.tasks.arrangedObjects" id="YII-ZA-Yge"/>
+                                    </connections>
                                 </tableView>
                             </subviews>
                         </clipView>
@@ -1021,17 +1040,19 @@
                 </constraints>
             </view>
         </window>
-        <customObject id="U9S-Un-lFg" customClass="AppDelegate"/>
         <customObject id="OLK-YX-Qqu" customClass="OSFileBrowerController">
             <connections>
-                <outlet property="fileManager" destination="85z-bv-1Qb" id="oyL-Ka-oNd"/>
                 <outlet property="fileOperationQueue" destination="Gql-go-ub9" id="NgG-Xk-ID7"/>
                 <outlet property="leftOutlineView" destination="fEg-LF-Qdq" id="iDq-v9-W1i"/>
                 <outlet property="rightOutlineView" destination="iar-c4-EIS" id="yKY-Z5-YxQ"/>
             </connections>
         </customObject>
-        <customObject id="85z-bv-1Qb" customClass="OSFileManager"/>
         <customObject id="Gql-go-ub9" customClass="OSFileOperationQueue"/>
+        <customObject id="0nh-Er-jzX" customClass="OSFileProgressController">
+            <connections>
+                <outlet property="window" destination="JS6-Zp-N5D" id="4Yz-e9-qsa"/>
+            </connections>
+        </customObject>
     </objects>
     <resources>
         <image name="NSMultipleDocuments" width="32" height="32"/>

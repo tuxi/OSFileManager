@@ -10,11 +10,11 @@
 
 
 typedef NS_ENUM(NSInteger, OSFileWriteStatus) {
-    OSFileWriteCanceled,          // 取消请求
-    OSFileWriteWaiting,          // 等待中
-    OSFileWriteExecuting,       // 正在执行该请求中
-    OSFileWriteFinished,         // 请求完成
-    OSFileWriteFailure        // 请求失败
+    OSFileWriteCanceled,      // 取消写入
+    OSFileWriteWaiting,       // 等待写入
+    OSFileWriteExecuting,     // 正在执行该写入
+    OSFileWriteFinished,      // 写入完成
+    OSFileWriteFailure        // 写入失败
 };
 
 @protocol OSFileOperation;

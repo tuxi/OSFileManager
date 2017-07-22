@@ -71,26 +71,27 @@
     // 拖拽结束后 将拖拽的文件copy到目标文件夹中
     [_draggingItems enumerateObjectsUsingBlock:^(FileAttributedItem * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         // 使用OSFileManager 操作文件
-        /*
-        [_fileManager copyItemAtURL:[NSURL fileURLWithPath:obj.fullPath] toURL:[NSURL fileURLWithPath:[_currentDropItem.fullPath stringByAppendingPathComponent:obj.fullPath.lastPathComponent]] progress:^(NSProgress *progress) {
+        
+        [[OSFileManager defaultManager] copyItemAtURL:[NSURL fileURLWithPath:obj.fullPath] toURL:[NSURL fileURLWithPath:[_currentDropItem.fullPath stringByAppendingPathComponent:obj.fullPath.lastPathComponent]] progress:^(NSProgress *progress) {
             
         } completionHandler:^(id<OSFileOperation> fileOperation, NSError *error) {
             
         }];
-         */
+         
         
         // 使用OSFileOperationQueue 操作文件
-        [_fileOperationQueue copyItemAtURL:[NSURL fileURLWithPath:obj.fullPath] toURL:[NSURL fileURLWithPath:[_currentDropItem.fullPath stringByAppendingPathComponent:obj.fullPath.lastPathComponent]] progress:^(NSProgress *progress) {
-            NSLog(@"progress:(%f)", progress.fractionCompleted);
-        } completionHandler:^(id<OSFileOperation> fileOperation, NSError *error) {
-            NSLog(@"%ld", fileOperation.writeState);
-        }];
+//        [_fileOperationQueue copyItemAtURL:[NSURL fileURLWithPath:obj.fullPath] toURL:[NSURL fileURLWithPath:[_currentDropItem.fullPath stringByAppendingPathComponent:obj.fullPath.lastPathComponent]] progress:^(NSProgress *progress) {
+//            NSLog(@"progress:(%f)", progress.fractionCompleted);
+//        } completionHandler:^(id<OSFileOperation> fileOperation, NSError *error) {
+//            NSLog(@"%ld", fileOperation.writeState);
+//        }];
     }];
     
     [_fileOperationQueue performQueue];
-    _fileOperationQueue.totalProgressBlock = ^(NSProgress *progress) {
-        NSLog(@"totalProgress:(%f)", progress.fractionCompleted);
-    };
+//    _fileOperationQueue.totalProgressBlock = ^(NSProgress *progress) {
+//        NSLog(@"totalProgress:(%f)", progress.fractionCompleted);
+//        NSLog(@"_____tprogress:(%@)", _fileOperationQueue.progress);
+//    };
 }
 
 - (NSDragOperation)outlineView:(NSOutlineView *)outlineView validateDrop:(id<NSDraggingInfo>)info proposedItem:(id)item proposedChildIndex:(NSInteger)index {
