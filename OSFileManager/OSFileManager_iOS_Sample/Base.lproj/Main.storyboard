@@ -21,36 +21,70 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <progressView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="4Y5-bE-9fJ">
-                                <rect key="frame" x="0.0" y="332.5" width="375" height="2"/>
+                            <progressView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="TvI-9W-vNj" userLabel="Progress View2">
+                                <rect key="frame" x="0.0" y="386" width="375" height="2"/>
                             </progressView>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fWK-eH-T9p">
-                                <rect key="frame" x="157" y="146" width="34" height="30"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="copy"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fWK-eH-T9p">
+                                <rect key="frame" x="140" y="519" width="95" height="30"/>
+                                <state key="normal" title="smallFileCopy"/>
                                 <connections>
-                                    <action selector="copyBtnClick:" destination="BYZ-38-t0r" eventType="touchUpInside" id="1ai-PN-0aF"/>
+                                    <action selector="samllFileCopy:" destination="BYZ-38-t0r" eventType="touchUpInside" id="KoT-VM-eF6"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="KZh-qO-kTR">
-                                <rect key="frame" x="114" y="88" width="121" height="30"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="KZh-qO-kTR">
+                                <rect key="frame" x="127" y="114" width="121" height="30"/>
                                 <state key="normal" title="document brower"/>
                                 <connections>
                                     <action selector="documentBrower:" destination="BYZ-38-t0r" eventType="touchUpInside" id="ujC-Ii-kaZ"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="U61-13-a0j">
+                                <rect key="frame" x="147" y="318" width="81" height="30"/>
+                                <state key="normal" title="bigFileCopy"/>
+                                <connections>
+                                    <action selector="bigFileCopy:" destination="BYZ-38-t0r" eventType="touchUpInside" id="StM-nZ-5CK"/>
+                                </connections>
+                            </button>
+                            <progressView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="M8W-Hu-Ovi" userLabel="Progress View3">
+                                <rect key="frame" x="0.0" y="182" width="375" height="2"/>
+                            </progressView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="total progress" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nEa-1T-2aJ">
+                                <rect key="frame" x="143" y="194" width="90" height="17"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <color key="textColor" red="0.22352941179999999" green="0.85098039219999999" blue="0.4941176471" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <progressView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="4Y5-bE-9fJ">
+                                <rect key="frame" x="0.0" y="587" width="375" height="2"/>
+                            </progressView>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="4Y5-bE-9fJ" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="KDU-e4-Y1Z"/>
-                            <constraint firstAttribute="trailing" secondItem="4Y5-bE-9fJ" secondAttribute="trailing" id="Lbn-bL-6ig"/>
-                            <constraint firstItem="4Y5-bE-9fJ" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="vkc-9K-KW9"/>
+                            <constraint firstItem="KZh-qO-kTR" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="50" id="77S-VN-HVW"/>
+                            <constraint firstItem="U61-13-a0j" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="9vy-gY-19q"/>
+                            <constraint firstItem="nEa-1T-2aJ" firstAttribute="top" secondItem="M8W-Hu-Ovi" secondAttribute="bottom" constant="10" id="CbB-GO-KWV"/>
+                            <constraint firstItem="TvI-9W-vNj" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="GHE-Zu-YaR"/>
+                            <constraint firstAttribute="trailing" secondItem="TvI-9W-vNj" secondAttribute="trailing" id="KKy-SZ-Vyf"/>
+                            <constraint firstItem="KZh-qO-kTR" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="NSV-dG-q3U"/>
+                            <constraint firstItem="TvI-9W-vNj" firstAttribute="top" secondItem="U61-13-a0j" secondAttribute="bottom" constant="38" id="Rhp-MU-dQT"/>
+                            <constraint firstItem="M8W-Hu-Ovi" firstAttribute="top" secondItem="KZh-qO-kTR" secondAttribute="bottom" constant="38" id="RuQ-IS-3ZI"/>
+                            <constraint firstItem="fWK-eH-T9p" firstAttribute="centerX" secondItem="U61-13-a0j" secondAttribute="centerX" id="UJQ-g4-LpQ"/>
+                            <constraint firstItem="4Y5-bE-9fJ" firstAttribute="leading" secondItem="TvI-9W-vNj" secondAttribute="leading" id="YuY-04-7XW"/>
+                            <constraint firstAttribute="trailing" secondItem="M8W-Hu-Ovi" secondAttribute="trailing" id="ecw-jr-O7g"/>
+                            <constraint firstItem="M8W-Hu-Ovi" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="fAA-OY-1Tf"/>
+                            <constraint firstItem="TvI-9W-vNj" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="jWQ-jK-hgB"/>
+                            <constraint firstItem="4Y5-bE-9fJ" firstAttribute="top" secondItem="fWK-eH-T9p" secondAttribute="bottom" constant="38" id="oI1-wc-ZhD"/>
+                            <constraint firstItem="U61-13-a0j" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="odD-0y-OAg"/>
+                            <constraint firstItem="nEa-1T-2aJ" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="sEF-Ea-yK1"/>
+                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="fWK-eH-T9p" secondAttribute="bottom" constant="118" id="vTq-uO-tO5"/>
+                            <constraint firstItem="4Y5-bE-9fJ" firstAttribute="trailing" secondItem="TvI-9W-vNj" secondAttribute="trailing" id="wcg-jN-B9m"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="pmK-Mk-h9b"/>
                     <connections>
-                        <outlet property="progressView" destination="4Y5-bE-9fJ" id="aQ5-hh-xjf"/>
+                        <outlet property="progressView1" destination="4Y5-bE-9fJ" id="Ey3-Ma-rcC"/>
+                        <outlet property="progressView2" destination="TvI-9W-vNj" id="KgY-Q8-yYR"/>
+                        <outlet property="totalProgress" destination="M8W-Hu-Ovi" id="gHt-qR-OSj"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
