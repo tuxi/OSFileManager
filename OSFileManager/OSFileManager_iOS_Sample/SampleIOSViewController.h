@@ -1,5 +1,5 @@
 //
-//  ViewController.h
+//  SampleIOSViewController.H
 //  OSFileManager_iOS_Sample
 //
 //  Created by Ossey on 2017/7/23.
@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface ViewController : UIViewController
+@interface SampleIOSViewController : UIViewController
 
 
 @end

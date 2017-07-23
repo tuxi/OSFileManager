@@ -359,13 +359,22 @@ int copyFileCallBack(
 
 - (void)start {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
-        _previousProgressTimeStamp = _startTimeStamp = [[NSDate date] timeIntervalSince1970];
         
-        _copyfileState = copyfile_state_alloc();
         [self willChangeValueForKey:@"isExecuting"];
         self.executing = YES;
         self.writeState = OSFileWriteExecuting;
         [self didChangeValueForKey:@"isExecuting"];
+        
+        BOOL isExist = [_fileManager fileExistsAtPath:[self.dstURL.path stringByAppendingPathComponent:self.sourceURL.lastPathComponent]];
+        if (isExist) {
+            self.error = [NSError errorWithDomain:NSCocoaErrorDomain code:NSFileWriteFileExistsError userInfo:@{@"NSErrorUserInfoKey": @"File exist"}];
+            [self finish];
+            return;
+        }
+        
+        _previousProgressTimeStamp = _startTimeStamp = [[NSDate date] timeIntervalSince1970];
+        
+        _copyfileState = copyfile_state_alloc();
 
         copyfile_state_set(_copyfileState, COPYFILE_STATE_STATUS_CB, &copyFileCallBack);
         copyfile_state_set(_copyfileState, COPYFILE_STATE_STATUS_CTX, (__bridge void *)self);
@@ -481,7 +490,7 @@ int copyFileCallBack(
     BOOL isExist = NO, isDirectory = NO;
     isExist = [_fileManager fileExistsAtPath:self.sourceURL.path isDirectory:&isDirectory];
     if (isExist && isDirectory) {
-        flags |= COPYFILE_RECURSIVE; // b |= b; 与 a = a|b; 等价，但前者可能效率更高
+        flags |= COPYFILE_RECURSIVE;
     }
     return flags;
 }
