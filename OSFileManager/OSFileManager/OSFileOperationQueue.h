@@ -6,9 +6,9 @@
 //  Copyright © 2017年 Ossey. All rights reserved.
 //
 
-#import "OSFileManager.h"
+#import <Foundation/Foundation.h>
 
-@interface OSFileOperationQueue : OSFileManager
+@interface OSFileOperationQueue : NSObject
 
 @property (nonatomic, strong) NSNumber *progress;
 

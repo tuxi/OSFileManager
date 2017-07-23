@@ -20,8 +20,6 @@
 		187C29F01F2448D80080C86D /* FileAttributedItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 187C29E51F2448D80080C86D /* FileAttributedItem.m */; };
 		187C29F11F2448D80080C86D /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 187C29E61F2448D80080C86D /* MainMenu.xib */; };
 		187C29F21F2448D80080C86D /* OSFileBrowerController.m in Sources */ = {isa = PBXBuildFile; fileRef = 187C29E81F2448D80080C86D /* OSFileBrowerController.m */; };
-		187C29F31F2448D80080C86D /* OSFileProgressController.m in Sources */ = {isa = PBXBuildFile; fileRef = 187C29EA1F2448D80080C86D /* OSFileProgressController.m */; };
-		187C29F41F2448D80080C86D /* OSProgressCellView.m in Sources */ = {isa = PBXBuildFile; fileRef = 187C29EC1F2448D80080C86D /* OSProgressCellView.m */; };
 		187C29F51F2448D80080C86D /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 187C29EE1F2448D80080C86D /* ViewController.m */; };
 		187C29FE1F244B330080C86D /* OSFileManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 187C29FB1F244B330080C86D /* OSFileManager.m */; };
 		187C29FF1F244B330080C86D /* OSFileManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 187C29FB1F244B330080C86D /* OSFileManager.m */; };
@@ -55,10 +53,6 @@
 		187C29E61F2448D80080C86D /* MainMenu.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MainMenu.xib; sourceTree = "<group>"; };
 		187C29E71F2448D80080C86D /* OSFileBrowerController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSFileBrowerController.h; sourceTree = "<group>"; };
 		187C29E81F2448D80080C86D /* OSFileBrowerController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSFileBrowerController.m; sourceTree = "<group>"; };
-		187C29E91F2448D80080C86D /* OSFileProgressController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSFileProgressController.h; sourceTree = "<group>"; };
-		187C29EA1F2448D80080C86D /* OSFileProgressController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSFileProgressController.m; sourceTree = "<group>"; };
-		187C29EB1F2448D80080C86D /* OSProgressCellView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSProgressCellView.h; sourceTree = "<group>"; };
-		187C29EC1F2448D80080C86D /* OSProgressCellView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSProgressCellView.m; sourceTree = "<group>"; };
 		187C29ED1F2448D80080C86D /* ViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
 		187C29EE1F2448D80080C86D /* ViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
 		187C29FA1F244B330080C86D /* OSFileManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSFileManager.h; sourceTree = "<group>"; };
@@ -131,10 +125,6 @@
 				187C29E61F2448D80080C86D /* MainMenu.xib */,
 				187C29E71F2448D80080C86D /* OSFileBrowerController.h */,
 				187C29E81F2448D80080C86D /* OSFileBrowerController.m */,
-				187C29E91F2448D80080C86D /* OSFileProgressController.h */,
-				187C29EA1F2448D80080C86D /* OSFileProgressController.m */,
-				187C29EB1F2448D80080C86D /* OSProgressCellView.h */,
-				187C29EC1F2448D80080C86D /* OSProgressCellView.m */,
 				187C29ED1F2448D80080C86D /* ViewController.h */,
 				187C29EE1F2448D80080C86D /* ViewController.m */,
 				187C29D31F2448530080C86D /* Supporting Files */,
@@ -305,9 +295,7 @@
 				187C29F51F2448D80080C86D /* ViewController.m in Sources */,
 				187C29EF1F2448D80080C86D /* AppDelegate.m in Sources */,
 				187C2A0D1F2456A10080C86D /* NSFileManager+FileOperationExtend.m in Sources */,
-				187C29F41F2448D80080C86D /* OSProgressCellView.m in Sources */,
 				187C29F01F2448D80080C86D /* FileAttributedItem.m in Sources */,
-				187C29F31F2448D80080C86D /* OSFileProgressController.m in Sources */,
 				187C29F21F2448D80080C86D /* OSFileBrowerController.m in Sources */,
 				187C29D51F2448530080C86D /* main.m in Sources */,
 				187C29FF1F244B330080C86D /* OSFileManager.m in Sources */,

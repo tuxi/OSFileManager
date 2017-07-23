@@ -8,11 +8,6 @@
 
 #import <Foundation/Foundation.h>
 
-#if TARGET_OS_IPHONE
-#elif TARGET_OS_MAC
-#import <Cocoa/Cocoa.h>
-#endif
-
 
 typedef NS_ENUM(NSInteger, OSFileWriteStatus) {
     OSFileWriteCanceled,      // 取消写入
@@ -32,10 +27,8 @@ typedef void(^OSFileOperationProgress)(NSProgress *progress);
 
 @property (nonatomic, assign) NSInteger maxConcurrentOperationCount;
 @property (nonatomic, assign) NSUInteger pendingOperationCount;
-@property (nonatomic, strong) NSNumber *totalProgressValue;
-@property (nonatomic, strong) NSNumber *totalSourceBytes;
-@property (nonatomic, strong) NSNumber *totalCopiedBytes;
 @property (nonatomic, strong) OSFileOperationProgress totalProgressBlock;
+@property (nonatomic, assign) NSNumber *totalProgressValue;
 @property (nonatomic, strong, readonly) NSArray<id<OSFileOperation>> *operations;
 
 + (OSFileManager *)defaultManager;

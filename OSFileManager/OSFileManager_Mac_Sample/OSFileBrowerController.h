@@ -14,5 +14,9 @@
 @property (weak) IBOutlet NSOutlineView *leftOutlineView;
 @property (weak) IBOutlet NSOutlineView *rightOutlineView;
 @property (weak) IBOutlet OSFileOperationQueue *fileOperationQueue;
+@property (weak) IBOutlet NSWindow *progressWindow;
+@property (weak) IBOutlet NSProgressIndicator *progressIndicator;
+@property (weak) IBOutlet NSTextField *fileNameLabel;
+@property (weak) IBOutlet NSTextField *progressTextLabel;
 
 @end

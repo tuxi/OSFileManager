@@ -57,9 +57,8 @@
                                 <color key="textColor" red="0.22352941179999999" green="0.85098039219999999" blue="0.4941176471" alpha="1" colorSpace="calibratedRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bq7-np-rbp">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bq7-np-rbp">
                                 <rect key="frame" x="247" y="318" width="45" height="30"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="cancel"/>
                                 <connections>
                                     <action selector="cancelBigFileCopy:" destination="BYZ-38-t0r" eventType="touchUpInside" id="hKz-Z8-V9P"/>
@@ -72,6 +71,7 @@
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="KZh-qO-kTR" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="50" id="77S-VN-HVW"/>
+                            <constraint firstItem="bq7-np-rbp" firstAttribute="centerY" secondItem="U61-13-a0j" secondAttribute="centerY" id="8GA-rv-yBU"/>
                             <constraint firstItem="U61-13-a0j" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="9vy-gY-19q"/>
                             <constraint firstItem="nEa-1T-2aJ" firstAttribute="top" secondItem="M8W-Hu-Ovi" secondAttribute="bottom" constant="10" id="CbB-GO-KWV"/>
                             <constraint firstItem="TvI-9W-vNj" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="GHE-Zu-YaR"/>
@@ -81,6 +81,7 @@
                             <constraint firstItem="M8W-Hu-Ovi" firstAttribute="top" secondItem="KZh-qO-kTR" secondAttribute="bottom" constant="38" id="RuQ-IS-3ZI"/>
                             <constraint firstItem="fWK-eH-T9p" firstAttribute="centerX" secondItem="U61-13-a0j" secondAttribute="centerX" id="UJQ-g4-LpQ"/>
                             <constraint firstItem="4Y5-bE-9fJ" firstAttribute="leading" secondItem="TvI-9W-vNj" secondAttribute="leading" id="YuY-04-7XW"/>
+                            <constraint firstItem="bq7-np-rbp" firstAttribute="leading" secondItem="U61-13-a0j" secondAttribute="trailing" constant="19" id="dXF-a9-51Z"/>
                             <constraint firstAttribute="trailing" secondItem="M8W-Hu-Ovi" secondAttribute="trailing" id="ecw-jr-O7g"/>
                             <constraint firstItem="M8W-Hu-Ovi" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="fAA-OY-1Tf"/>
                             <constraint firstItem="TvI-9W-vNj" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="jWQ-jK-hgB"/>

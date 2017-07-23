@@ -17,10 +17,6 @@ static void *FileProgressObserverContext = &FileProgressObserverContext;
 
 @property (nonatomic, strong) NSMutableArray<id<OSFileOperation>> *operations;
 @property (nonatomic, strong) NSOperationQueue *operationQueue;
-#if TARGET_OS_IPHONE
-#elif TARGET_OS_MAC
-@property (nonatomic, strong) NSArrayController *operationsController;
-#endif
 @property (nonatomic, strong) NSProgress *totalProgress;
 
 @end
@@ -82,19 +78,6 @@ int copyFileCallBack(
         _maxConcurrentOperationCount = 2;
         _operationQueue.maxConcurrentOperationCount = _maxConcurrentOperationCount;
         _operations = [NSMutableArray array];
-        
-#if TARGET_OS_IPHONE
-#elif TARGET_OS_MAC
-        [self bind:@"totalSourceBytes"
-          toObject:self.operationsController
-       withKeyPath:@"arrangedObjects.@sum.sourceTotalBytes"
-           options:nil];
-        [self bind:@"totalCopiedBytes"
-          toObject:self.operationsController
-       withKeyPath:@"arrangedObjects.@sum.receivedCopiedBytes"
-           options:nil];
-        
-#endif
         _totalProgress = [NSProgress progressWithTotalUnitCount:0];
         [_totalProgress addObserver:self
                         forKeyPath:NSStringFromSelector(@selector(fractionCompleted))
@@ -110,50 +93,20 @@ int copyFileCallBack(
     self.operationQueue.maxConcurrentOperationCount = maxConcurrentOperationCount;
 }
 
-#if TARGET_OS_IPHONE
-#elif TARGET_OS_MAC
-- (NSArrayController *)operationsController {
-    if (!_operationsController) {
-        _operationsController = [NSArrayController new];
-        [_operationsController setObjectClass:[OSFileOperation class]];
-        [_operationsController setAutomaticallyPreparesContent:YES];
-        [_operationsController setAutomaticallyRearrangesObjects:YES];
-        [_operationsController bind:NSContentArrayBinding toObject:self withKeyPath:@"operations" options:nil];
-    }
-    return _operationsController;
-}
-#endif
 
 - (NSUInteger)pendingOperationCount {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isFinished == NO"];
     return [self.operations filteredArrayUsingPredicate:predicate].count;
 }
 
-- (NSNumber *)totalProgressValue {
-    float progress = 0.0;
-    if (self.totalSourceBytes.unsignedLongLongValue > 0) {
-        progress = self.totalCopiedBytes.doubleValue / self.totalSourceBytes.doubleValue;
-    }
-    return @(progress);
-}
-
 ////////////////////////////////////////////////////////////////////////
 #pragma mark -
 ////////////////////////////////////////////////////////////////////////
 
-+ (NSSet<NSString *> *)keyPathsForValuesAffectingValueForKey:(NSString *)key {
-    NSSet *keyPaths = [super keyPathsForValuesAffectingValueForKey:key];
-    if ([key isEqualToString:NSStringFromSelector(@selector(totalProgressValue))]) {
-        keyPaths = [keyPaths setByAddingObjectsFromArray:@[
-                                                           NSStringFromSelector(@selector(totalSourceBytes)),
-                                                           NSStringFromSelector(@selector(totalCopiedBytes))]];
-    }
-    return keyPaths;
-}
-
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
     if (context == FileProgressObserverContext && object == self.totalProgress) {
         dispatch_async(dispatch_get_main_queue(), ^{
+            _totalProgressValue = @(self.totalProgress.fractionCompleted);
             if (self.totalProgressBlock) {
                 self.totalProgressBlock(self.totalProgress);
             }

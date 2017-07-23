@@ -8,7 +8,7 @@
 
 #import "OSFileBrowerController.h"
 #import "FileAttributedItem.h"
-
+#import "OSFileManager.h"
 
 @interface OSFileBrowerController ()
 
@@ -17,10 +17,13 @@
 /** 当前拖拽松开文件 */
 @property (nonatomic, strong) FileAttributedItem *currentDropItem;
 
-
 @end
 
 @implementation OSFileBrowerController
+
+{
+    id<OSFileOperation> _fileOperation;
+}
 
 - (instancetype)init
 {
@@ -33,6 +36,7 @@
 
 - (void)awakeFromNib {
     [super awakeFromNib];
+    
     // 对leftOutlineView进行注册拖放事件的监听
     [self.leftOutlineView registerForDraggedTypes:@[(NSString *)kUTTypeFileURL]];
     [self.leftOutlineView setDraggingSourceOperationMask:NSDragOperationEvery forLocal:YES];
@@ -40,6 +44,8 @@
     [self.rightOutlineView registerForDraggedTypes:@[(NSString *)kUTTypeFileURL]];
     [self.rightOutlineView setDraggingSourceOperationMask:NSDragOperationEvery forLocal:YES];
     
+    [self.progressIndicator setUsesThreadedAnimation:YES];
+    [self.progressIndicator startAnimation:nil];
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -58,12 +64,17 @@
     [_draggingItems enumerateObjectsUsingBlock:^(FileAttributedItem * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         // 使用OSFileManager 操作文件
         
-        [[OSFileManager defaultManager] copyItemAtURL:[NSURL fileURLWithPath:obj.fullPath] toURL:[NSURL fileURLWithPath:[_currentDropItem.fullPath stringByAppendingPathComponent:obj.fullPath.lastPathComponent]] progress:^(NSProgress *progress) {
-            
+       _fileOperation = [[OSFileManager defaultManager] copyItemAtURL:[NSURL fileURLWithPath:obj.fullPath] toURL:[NSURL fileURLWithPath:[_currentDropItem.fullPath stringByAppendingPathComponent:obj.fullPath.lastPathComponent]] progress:^(NSProgress *progress) {
+            self.progressIndicator.doubleValue = progress.fractionCompleted;
+            self.progressTextLabel.stringValue = [self progressStringWithProgress:progress];
+            self.fileNameLabel.stringValue = obj.fullPath.lastPathComponent;
+            if(progress.fractionCompleted >= 1) {
+                [self.progressIndicator stopAnimation:nil];
+            }
         } completionHandler:^(id<OSFileOperation> fileOperation, NSError *error) {
             
         }];
-         
+        
         
         // 使用OSFileOperationQueue 操作文件
 //        [_fileOperationQueue copyItemAtURL:[NSURL fileURLWithPath:obj.fullPath] toURL:[NSURL fileURLWithPath:[_currentDropItem.fullPath stringByAppendingPathComponent:obj.fullPath.lastPathComponent]] progress:^(NSProgress *progress) {
@@ -74,10 +85,12 @@
     }];
     
     [_fileOperationQueue performQueue];
-//    _fileOperationQueue.totalProgressBlock = ^(NSProgress *progress) {
-//        NSLog(@"totalProgress:(%f)", progress.fractionCompleted);
-//        NSLog(@"_____tprogress:(%@)", _fileOperationQueue.progress);
-//    };
+    [OSFileManager defaultManager].totalProgressBlock = ^(NSProgress *progress) {
+        self.progressIndicator.doubleValue = progress.fractionCompleted;
+        if(progress.fractionCompleted >= 1) {
+            [self.progressIndicator stopAnimation:nil];
+        }
+    };
 }
 
 - (NSDragOperation)outlineView:(NSOutlineView *)outlineView validateDrop:(id<NSDraggingInfo>)info proposedItem:(id)item proposedChildIndex:(NSInteger)index {
@@ -119,5 +132,20 @@
 - (NSView *)outlineView:(NSOutlineView *)outlineView viewForTableColumn:(NSTableColumn *)tableColumn item:(id)item {
     return [outlineView makeViewWithIdentifier:@"DataCell" owner:self];
 }
+
+- (NSString *)progressStringWithProgress:(NSProgress *)progress {
+    NSString *receivedCopiedBytesStr = [NSByteCountFormatter stringFromByteCount:progress.completedUnitCount
+                                                                      countStyle:NSByteCountFormatterCountStyleFile];
+    NSString *totalBytesStr = [NSByteCountFormatter stringFromByteCount:progress.totalUnitCount countStyle:NSByteCountFormatterCountStyleFile];
+    return [NSString stringWithFormat:@"[%@ of %@] -- [progress: %f]", receivedCopiedBytesStr, totalBytesStr, progress.fractionCompleted];
+}
+- (IBAction)cancel:(id)sender {
+    
+    if (_fileOperation) {
+        [_fileOperation cancel];
+    }
+    
+}
+
 
 @end

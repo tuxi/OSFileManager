@@ -7,6 +7,8 @@
 //
 
 #import "OSFileOperationQueue.h"
+#import "OSFileManager.h"
+#import <Cocoa/Cocoa.h>
 
 typedef enum : NSUInteger {
     CopyOperation,
@@ -33,7 +35,7 @@ static void *OSFileQueueItemsProcessingControllerContext = &OSFileQueueItemsProc
 @interface OSFileOperationQueue ()
 
 @property (nonatomic, strong) NSArrayController *itemsProcessingController;
-
+@property (nonatomic, strong) OSFileManager *fileManager;
 
 @end
 
@@ -51,6 +53,7 @@ static void *OSFileQueueItemsProcessingControllerContext = &OSFileQueueItemsProc
 {
     self = [super init];
     if (self) {
+        _fileManager = [OSFileManager new];
         [self.itemsProcessingController addObserver:self
                                          forKeyPath:@"arrangedObjects.@count"
                                             options:NSKeyValueObservingOptionNew
@@ -99,13 +102,13 @@ static void *OSFileQueueItemsProcessingControllerContext = &OSFileQueueItemsProc
         [self updateProcessItemsProgress];
         [_operationRequests enumerateObjectsUsingBlock:^(OSFileOperationRequest * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
             if (obj.operationMode == CopyOperation) {
-                [super copyItemAtURL:obj.sourceURL
+                [_fileManager copyItemAtURL:obj.sourceURL
                                toURL:obj.dstURL
                             progress:obj.progressBlock
                    completionHandler:obj.completionHandler];
             }
             else if (obj.operationMode == MoveOperation) {
-                [super moveItemAtURL:obj.sourceURL
+                [_fileManager moveItemAtURL:obj.sourceURL
                                toURL:obj.dstURL
                             progress:obj.progressBlock
                    completionHandler:obj.completionHandler];
@@ -138,7 +141,7 @@ static void *OSFileQueueItemsProcessingControllerContext = &OSFileQueueItemsProc
         [_itemsProcessingController setObjectClass:NSClassFromString(@"OSFileOperation")];
         [_itemsProcessingController setAutomaticallyPreparesContent:YES];
         [_itemsProcessingController setAutomaticallyRearrangesObjects:YES];
-        [_itemsProcessingController bind:NSContentArrayBinding toObject:self withKeyPath:@"operations" options:nil];
+        [_itemsProcessingController bind:NSContentArrayBinding toObject:self withKeyPath:@"fileManager.operations" options:nil];
     }
     return _itemsProcessingController;
 }
