@@ -17,7 +17,10 @@ static void *FileProgressObserverContext = &FileProgressObserverContext;
 
 @property (nonatomic, strong) NSMutableArray<id<OSFileOperation>> *operations;
 @property (nonatomic, strong) NSOperationQueue *operationQueue;
+#if TARGET_OS_IPHONE
+#elif TARGET_OS_MAC
 @property (nonatomic, strong) NSArrayController *operationsController;
+#endif
 @property (nonatomic, strong) NSProgress *totalProgress;
 
 @end
@@ -80,6 +83,8 @@ int copyFileCallBack(
         _operationQueue.maxConcurrentOperationCount = _maxConcurrentOperationCount;
         _operations = [NSMutableArray array];
         
+#if TARGET_OS_IPHONE
+#elif TARGET_OS_MAC
         [self bind:@"totalSourceBytes"
           toObject:self.operationsController
        withKeyPath:@"arrangedObjects.@sum.sourceTotalBytes"
@@ -89,6 +94,7 @@ int copyFileCallBack(
        withKeyPath:@"arrangedObjects.@sum.receivedCopiedBytes"
            options:nil];
         
+#endif
         _totalProgress = [NSProgress progressWithTotalUnitCount:0];
         [_totalProgress addObserver:self
                         forKeyPath:NSStringFromSelector(@selector(fractionCompleted))
@@ -104,6 +110,8 @@ int copyFileCallBack(
     self.operationQueue.maxConcurrentOperationCount = maxConcurrentOperationCount;
 }
 
+#if TARGET_OS_IPHONE
+#elif TARGET_OS_MAC
 - (NSArrayController *)operationsController {
     if (!_operationsController) {
         _operationsController = [NSArrayController new];
@@ -114,6 +122,7 @@ int copyFileCallBack(
     }
     return _operationsController;
 }
+#endif
 
 - (NSUInteger)pendingOperationCount {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isFinished == NO"];

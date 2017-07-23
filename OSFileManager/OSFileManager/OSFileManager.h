@@ -6,7 +6,12 @@
 //  Copyright © 2017年 Ossey. All rights reserved.
 //
 
+#import <Foundation/Foundation.h>
+
+#if TARGET_OS_IPHONE
+#elif TARGET_OS_MAC
 #import <Cocoa/Cocoa.h>
+#endif
 
 
 typedef NS_ENUM(NSInteger, OSFileWriteStatus) {

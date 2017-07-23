@@ -26,21 +26,7 @@
 {
     self = [super init];
     if (self) {
-        // test
-        /*
-        NSURL *srcURL = [NSURL fileURLWithPath:@"/Users/mofeini/Desktop/trunk4"];
-        NSURL *dstURL = [NSURL fileURLWithPath:@"/Users/mofeini/Desktop/trunk5"];
-        [[OSFileManager defaultManager] copyItemAtURL:srcURL toURL:dstURL progress:^(NSProgress *progress) {
-            
-            NSLog(@"%f", progress.fractionCompleted);
-        } completionHandler:^(id<OSFileOperation> fileOperation, NSError *error) {
-            
-        }];
         
-        [OSFileManager defaultManager].totalProgressBlock = ^(NSProgress *progress) {
-            NSLog(@"%f", progress.fractionCompleted);
-        };
-         */
     }
     return self;
 }

@@ -1,8 +1,8 @@
 //
 //  main.m
-//  OSFileManager
+//  OSFileManager_Mac_Sample
 //
-//  Created by Ossey on 2017/7/21.
+//  Created by Ossey on 2017/7/23.
 //  Copyright © 2017年 Ossey. All rights reserved.
 //
 

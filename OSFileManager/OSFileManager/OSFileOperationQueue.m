@@ -34,6 +34,7 @@ static void *OSFileQueueItemsProcessingControllerContext = &OSFileQueueItemsProc
 
 @property (nonatomic, strong) NSArrayController *itemsProcessingController;
 
+
 @end
 
 @implementation OSFileOperationQueue
@@ -118,6 +119,7 @@ static void *OSFileQueueItemsProcessingControllerContext = &OSFileQueueItemsProc
 #pragma mark -
 ////////////////////////////////////////////////////////////////////////
 
+
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
     if (context == OSFileQueueItemsProcessingControllerContext && object == self.itemsProcessingController) {
         if ([keyPath isEqualToString:@"arrangedObjects.@count"]) {
@@ -127,6 +129,8 @@ static void *OSFileQueueItemsProcessingControllerContext = &OSFileQueueItemsProc
         [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
     }
 }
+
+
 
 - (NSArrayController *)itemsProcessingController {
     if (!_itemsProcessingController) {
@@ -138,6 +142,7 @@ static void *OSFileQueueItemsProcessingControllerContext = &OSFileQueueItemsProc
     }
     return _itemsProcessingController;
 }
+
 
 - (void)updateProcessItemsProgress {
     _numberOfItemsProcessed = _numberOfItemsToProcess - [self.itemsProcessingController.arrangedObjects count];
