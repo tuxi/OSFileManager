@@ -11,7 +11,6 @@
 
 typedef NS_ENUM(NSInteger, OSFileWriteStatus) {
     OSFileWriteCanceled,      // 取消写入
-    OSFileWriteWaiting,       // 等待写入
     OSFileWriteExecuting,     // 正在执行该写入
     OSFileWriteFinished,      // 写入完成
     OSFileWriteFailure        // 写入失败

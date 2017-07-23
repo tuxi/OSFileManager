@@ -7,7 +7,6 @@
 //
 
 #import "OSFileOperationQueue.h"
-#import "OSFileManager.h"
 #import <Cocoa/Cocoa.h>
 
 typedef enum : NSUInteger {
@@ -16,6 +15,7 @@ typedef enum : NSUInteger {
 } OSFileOperationMode;
 
 static void *OSFileQueueItemsProcessingControllerContext = &OSFileQueueItemsProcessingControllerContext;
+static void *OSFileQueueItemFinishedContext = &OSFileQueueItemFinishedContext;
 
 @interface OSFileOperationRequest : NSObject
 
@@ -54,6 +54,8 @@ static void *OSFileQueueItemsProcessingControllerContext = &OSFileQueueItemsProc
     self = [super init];
     if (self) {
         _fileManager = [OSFileManager new];
+        self.maxConcurrentOperationCount = 2;
+        _fileManager.totalProgressBlock = self.totalProgressBlock;
         [self.itemsProcessingController addObserver:self
                                          forKeyPath:@"arrangedObjects.@count"
                                             options:NSKeyValueObservingOptionNew
@@ -69,6 +71,11 @@ static void *OSFileQueueItemsProcessingControllerContext = &OSFileQueueItemsProc
                                            context:OSFileQueueItemsProcessingControllerContext];
 }
 
+- (void)setMaxConcurrentOperationCount:(NSUInteger)maxConcurrentOperationCount {
+    _maxConcurrentOperationCount = maxConcurrentOperationCount;
+    _fileManager.maxConcurrentOperationCount = maxConcurrentOperationCount;
+}
+
 
 ////////////////////////////////////////////////////////////////////////
 #pragma mark -
@@ -76,17 +83,31 @@ static void *OSFileQueueItemsProcessingControllerContext = &OSFileQueueItemsProc
 
 - (void)copyItemAtURL:(NSURL *)srcURL toURL:(NSURL *)dstURL progress:(OSFileOperationProgress)progress completionHandler:(OSFileOperationCompletionHandler)handler {
     @synchronized (_operationRequests) {
+        
+        OSFileOperationRequest *request = [self operationRequestBySrcURL:srcURL dstURL:dstURL];
+        if (request) {
+            NSLog(@"request exist (srcPath:%@-dstPath:%@)", srcURL.path, dstURL.path);
+            return;
+        }
+        
         [_operationRequests addObject:[[OSFileOperationRequest alloc] initWithSourceURL:srcURL
                                                                                  desURL:dstURL
                                                                           operationMode:CopyOperation
                                                                                progress:progress
                                                                       completionHandler:handler]];
+
     }
 }
 
 - (void)moveItemAtURL:(NSURL *)srcURL toURL:(NSURL *)dstURL progress:(OSFileOperationProgress)progress completionHandler:(OSFileOperationCompletionHandler)handler {
     
     @synchronized (_operationRequests) {
+        
+        OSFileOperationRequest *request = [self operationRequestBySrcURL:srcURL dstURL:dstURL];
+        if (request) {
+            NSLog(@"request exist (srcPath:%@-dstPath:%@)", srcURL.path, dstURL.path);
+            return;
+        }
         [_operationRequests addObject:[[OSFileOperationRequest alloc] initWithSourceURL:srcURL
                                                                                  desURL:dstURL
                                                                           operationMode:MoveOperation
@@ -100,21 +121,49 @@ static void *OSFileQueueItemsProcessingControllerContext = &OSFileQueueItemsProc
     @synchronized (_operationRequests) {
         _numberOfItemsToProcess = _operationRequests.count + [_itemsProcessingController.arrangedObjects count];
         [self updateProcessItemsProgress];
-        [_operationRequests enumerateObjectsUsingBlock:^(OSFileOperationRequest * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        
+        NSInteger count = MIN([_operationRequests count], self.maxConcurrentOperationCount ?: INT_MAX);
+        for (NSInteger i = 0; i < count; ++i) {
+            if (!_operationRequests.count) {
+                return;
+            }
+            
+            OSFileOperationRequest * _Nonnull obj = _operationRequests[i];
+            id op = nil;
             if (obj.operationMode == CopyOperation) {
-                [_fileManager copyItemAtURL:obj.sourceURL
-                               toURL:obj.dstURL
-                            progress:obj.progressBlock
-                   completionHandler:obj.completionHandler];
+              op = [_fileManager copyItemAtURL:obj.sourceURL
+                                      toURL:obj.dstURL
+                                   progress:obj.progressBlock
+                          completionHandler:obj.completionHandler];
             }
             else if (obj.operationMode == MoveOperation) {
-                [_fileManager moveItemAtURL:obj.sourceURL
-                               toURL:obj.dstURL
-                            progress:obj.progressBlock
-                   completionHandler:obj.completionHandler];
+               op = [_fileManager moveItemAtURL:obj.sourceURL
+                                      toURL:obj.dstURL
+                                   progress:obj.progressBlock
+                          completionHandler:obj.completionHandler];
             }
+            [op addObserver:self forKeyPath:@"isFinished"
+                    options:NSKeyValueObservingOptionNew
+                    context:OSFileQueueItemFinishedContext];
+
+        }
+        
+    }
+}
+
+- (OSFileOperationRequest *)operationRequestBySrcURL:(NSURL *)srcURL dstURL:(NSURL *)dstURL {
+    @synchronized (_operationRequests) {
+        NSUInteger foundIdxInOperations = [_operationRequests indexOfObjectPassingTest:^BOOL(OSFileOperationRequest * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            BOOL res = [obj.sourceURL.path isEqualToString:srcURL.path] && [obj.dstURL.path isEqualToString:dstURL.path];
+            if (res) {
+                *stop = YES;
+            }
+            return res;
         }];
-        [_operationRequests removeAllObjects];
+        if (foundIdxInOperations != NSNotFound) {
+            return [_operationRequests objectAtIndex:foundIdxInOperations];
+        }
+        return nil;
     }
 }
 
@@ -127,6 +176,23 @@ static void *OSFileQueueItemsProcessingControllerContext = &OSFileQueueItemsProc
     if (context == OSFileQueueItemsProcessingControllerContext && object == self.itemsProcessingController) {
         if ([keyPath isEqualToString:@"arrangedObjects.@count"]) {
             [self updateProcessItemsProgress];
+        }
+    }
+    else if (context == OSFileQueueItemFinishedContext) {
+        if ([keyPath isEqualToString:@"isFinished"]) {
+            [object removeObserver:self forKeyPath:keyPath context:OSFileQueueItemFinishedContext];
+            id <OSFileOperation> op = object;
+            NSUInteger foundIdxInOperations = [_operationRequests indexOfObjectPassingTest:^BOOL(OSFileOperationRequest * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                BOOL res = [obj.sourceURL.path isEqualToString:op.sourceURL.path] && [obj.dstURL.path isEqualToString:op.dstURL.path];
+                if (res) {
+                    *stop = YES;
+                }
+                return res;
+            }];
+            if (foundIdxInOperations != NSNotFound) {
+                [_operationRequests removeObjectAtIndex:foundIdxInOperations];
+            }
+            [self performQueue];
         }
     } else {
         [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];

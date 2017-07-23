@@ -143,8 +143,8 @@
     
     if (_fileOperation) {
         [_fileOperation cancel];
+        _fileOperation = nil;
     }
-    
 }
 
 
