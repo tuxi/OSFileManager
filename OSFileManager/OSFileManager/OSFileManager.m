@@ -207,12 +207,26 @@ int copyFileCallBack(
     [_operations removeObjectAtIndex:index];
 }
 
+- (OSFileOperation *)operationWithSourceURL:(NSURL *)srcURL dstRL:(NSURL *)dstURL {
+   NSUInteger foundIdx = [_operations indexOfObjectPassingTest:^BOOL(id<OSFileOperation>  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        BOOL res = [obj.sourceURL.path isEqualToString:srcURL.path] && [obj.dstURL.path isEqualToString:dstURL.path];
+        if (res) {
+            *stop = YES;
+        }
+        return res;
+    }];
+    if (foundIdx != NSNotFound) {
+        return [_operations objectAtIndex:foundIdx];
+    }
+    return nil;
+}
+
 ////////////////////////////////////////////////////////////////////////
 #pragma mark - Public methods
 ////////////////////////////////////////////////////////////////////////
 
 
-- (void)copyItemAtURL:(NSURL *)srcURL
+- (id<OSFileOperation>)copyItemAtURL:(NSURL *)srcURL
                 toURL:(NSURL *)dstURL
              progress:(OSFileOperationProgress)progress
     completionHandler:(OSFileOperationCompletionHandler)handler {
@@ -227,7 +241,7 @@ int copyFileCallBack(
     [self.totalProgress resignCurrent];
     
     if (fileOperation.isFinished) {
-        return;
+        return nil;
     }
     
     [self addOperationsObject:fileOperation];
@@ -237,10 +251,11 @@ int copyFileCallBack(
                                withObject:weakOperation
                             waitUntilDone:NO];
     };
+    return fileOperation;
 }
 
 
-- (void)moveItemAtURL:(NSURL *)srcURL
+- (id<OSFileOperation>)moveItemAtURL:(NSURL *)srcURL
                 toURL:(NSURL *)dstURL
              progress:(OSFileOperationProgress)progress
     completionHandler:(OSFileOperationCompletionHandler)handler {
@@ -256,7 +271,7 @@ int copyFileCallBack(
     [self.totalProgress resignCurrent];
     
     if (fileOperation.isFinished) {
-        return;
+        return nil;
     }
     
     [self addOperationsObject:fileOperation];
@@ -274,12 +289,13 @@ int copyFileCallBack(
                                withObject:weakOperation
                             waitUntilDone:NO];
     };
+    return fileOperation;
 }
 
 - (void)cancelAllOperation {
     [_operationQueue cancelAllOperations];
+    [_operations removeAllObjects];
 }
-
 
 @end
 
@@ -382,6 +398,7 @@ int copyFileCallBack(
         const char *dstPath = self.dstURL.path.UTF8String;
         // 执行copy文件，此方法会阻塞当前线程，直到文件拷贝完成为止
         int resCode = copyfile(scourcePath, dstPath, _copyfileState, [self flags]);
+        /*
         // copy完成后，若进度不为1，再次检测下本地的文件
         if (self.progress.fractionCompleted != 1.0 && resCode == 0) {
             NSError *error = nil;
@@ -390,7 +407,7 @@ int copyFileCallBack(
                 [self updateProgress];
             }
         }
-        
+        */
         if (resCode != 0 && ![self isCancelled]) {
             NSString *errorMessage = [NSString stringWithCString:strerror(errno) encoding:NSUTF8StringEncoding];
             self.error = [NSError errorWithDomain:NSCocoaErrorDomain code:resCode userInfo:@{NSFilePathErrorKey: errorMessage}];
@@ -407,7 +424,10 @@ int copyFileCallBack(
         if (self.isCancelled || self.isFinished) {
             [self finish];
         } else {
+            [self willChangeValueForKey:@"isExecuting"];
             [self willChangeValueForKey:@"isCancelled"];
+            self.executing = NO;
+            [self willChangeValueForKey:@"isExecuting"];
             self.cancelled = YES;
             BOOL isExist = [_fileManager fileExistsAtPath:self.dstURL.path];
             if (isExist) {
@@ -461,25 +481,26 @@ int copyFileCallBack(
 
 - (void)finish {
     @synchronized (self) {
-        if (self.isExecuting && !self.isFinished) {
+        
+         if (self.isExecuting && !self.isFinished) {
             [self willChangeValueForKey:@"isExecuting"];
             [self willChangeValueForKey:@"isFinished"];
             self.executing = NO;
             self.finished = YES;
             if (self.error) {
                 self.writeState = OSFileWriteFailure;
-                self.progress.completedUnitCount = self.progress.totalUnitCount;
             } else {
                 self.writeState = OSFileWriteFinished;
             }
             [self didChangeValueForKey:@"isFinished"];
             [self didChangeValueForKey:@"isExecuting"];
-        } else if ([self isCancelled]) {
-            self.error = [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorCancelled userInfo:nil];
-            self.writeState = OSFileWriteCanceled;
-            self.progress.completedUnitCount = self.progress.totalUnitCount;
-        }
+         }
+         else if (self.isCancelled) {
+             self.error = [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorCancelled userInfo:nil];
+             self.writeState = OSFileWriteCanceled;
+         }
         
+        self.progress.completedUnitCount = self.progress.totalUnitCount;
         self.completionHandler(self, self.error);
     }
 }

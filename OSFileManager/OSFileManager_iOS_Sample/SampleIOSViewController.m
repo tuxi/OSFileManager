@@ -17,24 +17,17 @@
 @property (weak, nonatomic) IBOutlet UIProgressView *progressView1;
 @property (weak, nonatomic) IBOutlet UIProgressView *progressView2;
 @property (weak, nonatomic) IBOutlet UIProgressView *totalProgress;
+@property (strong) id<OSFileOperation> bidOperation;
 
 @end
 
 @implementation SampleIOSViewController
 
-+ (void)load {
-    NSFileManager *fileManager = [NSFileManager new];
-    
-    BOOL isExist = NO, isDirectory = NO;
-    isExist = [fileManager fileExistsAtPath:kCopyDirectory isDirectory:&isDirectory];
-    if (!isExist || !isDirectory) {
-        [fileManager createDirectoryAtPath:kCopyDirectory withIntermediateDirectories:YES attributes:nil error:nil];
-    }
-    
-}
 
 
 - (IBAction)samllFileCopy:(id)sender {
+    
+    [self createCopyDstFolder];
     
     NSURL *sourceURL = [NSURL fileURLWithPath:[kDoucmentPath stringByAppendingPathComponent:@"testcopy"]];
     NSURL *dstURL = [NSURL fileURLWithPath:kCopyDirectory];
@@ -48,17 +41,26 @@
         NSLog(@"%ld", fileOperation.writeState);
     }];
 }
+- (IBAction)cancelBigFileCopy:(id)sender {
+    if (_bidOperation) {
+        [_bidOperation cancel];
+    }
+    
+}
 - (IBAction)bigFileCopy:(id)sender {
+    
+    [self createCopyDstFolder];
     
     NSURL *sourceURL = [NSURL fileURLWithPath:[kDoucmentPath stringByAppendingPathComponent:@"testcopy_bigfile"]];
     NSURL *dstURL = [NSURL fileURLWithPath:kCopyDirectory];
-    [[OSFileManager defaultManager] copyItemAtURL:sourceURL toURL:dstURL progress:^(NSProgress *progress) {
+    _bidOperation = [[OSFileManager defaultManager] copyItemAtURL:sourceURL toURL:dstURL progress:^(NSProgress *progress) {
         NSLog(@"%f", progress.fractionCompleted);
         dispatch_async(dispatch_get_main_queue(), ^{
             self.progressView2.progress = progress.fractionCompleted;
         });
     } completionHandler:^(id<OSFileOperation> fileOperation, NSError *error) {
         NSLog(@"%ld", fileOperation.writeState);
+        
     }];
 }
 
@@ -85,4 +87,13 @@
 }
 
 
+- (void)createCopyDstFolder {
+    NSFileManager *fileManager = [NSFileManager new];
+    
+    BOOL isExist = NO, isDirectory = NO;
+    isExist = [fileManager fileExistsAtPath:kCopyDirectory isDirectory:&isDirectory];
+    if (!isExist || !isDirectory) {
+        [fileManager createDirectoryAtPath:kCopyDirectory withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+}
 @end
