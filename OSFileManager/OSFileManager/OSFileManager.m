@@ -99,6 +99,10 @@ int copyFileCallBack(
     return [self.operations filteredArrayUsingPredicate:predicate].count;
 }
 
+- (NSNumber *)totalProgressValue {
+    return @(self.totalProgress.fractionCompleted);
+}
+
 ////////////////////////////////////////////////////////////////////////
 #pragma mark -
 ////////////////////////////////////////////////////////////////////////
@@ -106,7 +110,6 @@ int copyFileCallBack(
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
     if (context == FileProgressObserverContext && object == self.totalProgress) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            _totalProgressValue = @(self.totalProgress.fractionCompleted);
             if (self.totalProgressBlock) {
                 self.totalProgressBlock(self.totalProgress);
             }
@@ -284,7 +287,7 @@ int copyFileCallBack(
                                                          userInfo:nil];
         naviteProgress.kind = NSProgressKindFile;
         [naviteProgress setUserInfoObject:NSProgressFileOperationKindKey
-                             forKey:NSProgressFileOperationKindDownloading];
+                             forKey:NSProgressFileOperationKindCopying];
         [naviteProgress setUserInfoObject:self.sourceURL forKey:NSStringFromSelector(@selector(sourceURL))];
         naviteProgress.cancellable = NO;
         naviteProgress.pausable = NO;
@@ -304,7 +307,7 @@ int copyFileCallBack(
 
 + (NSSet<NSString *> *)keyPathsForValuesAffectingValueForKey:(NSString *)key {
     NSSet *keyPaths = [super keyPathsForValuesAffectingValueForKey:key];
-    if ([key isEqualToString:NSStringFromSelector(@selector(progress))]) {
+    if ([key isEqualToString:NSStringFromSelector(@selector(progressValue))]) {
         keyPaths = [keyPaths setByAddingObjectsFromArray:@[
                                                            NSStringFromSelector(@selector(sourceTotalBytes)),
                                                            NSStringFromSelector(@selector(receivedCopiedBytes))]];
