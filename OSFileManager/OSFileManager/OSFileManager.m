@@ -44,12 +44,12 @@ static void *FileProgressObserverContext = &FileProgressObserverContext;
 @property (nonatomic, copy) OSFileOperationProgress progressBlock;
 
 int copyFileCallBack(
- int what,
- int stage,
- copyfile_state_t state,
- const char *source,
- const char *destination,
- void *context);
+                     int what,
+                     int stage,
+                     copyfile_state_t state,
+                     const char *source,
+                     const char *destination,
+                     void *context);
 
 @end
 
@@ -80,9 +80,9 @@ int copyFileCallBack(
         _operations = [NSMutableArray array];
         _totalProgress = [NSProgress progressWithTotalUnitCount:0];
         [_totalProgress addObserver:self
-                        forKeyPath:NSStringFromSelector(@selector(fractionCompleted))
-                           options:NSKeyValueObservingOptionInitial
-                           context:FileProgressObserverContext];
+                         forKeyPath:NSStringFromSelector(@selector(fractionCompleted))
+                            options:NSKeyValueObservingOptionInitial
+                            context:FileProgressObserverContext];
         
     }
     return self;
@@ -138,9 +138,9 @@ int copyFileCallBack(
         
         self.totalProgress = [NSProgress progressWithTotalUnitCount:0];
         [self.totalProgress addObserver:self
-                            forKeyPath:NSStringFromSelector(@selector(fractionCompleted))
-                               options:NSKeyValueObservingOptionInitial
-                               context:FileProgressObserverContext];
+                             forKeyPath:NSStringFromSelector(@selector(fractionCompleted))
+                                options:NSKeyValueObservingOptionInitial
+                                context:FileProgressObserverContext];
     }
 }
 
@@ -164,7 +164,7 @@ int copyFileCallBack(
 }
 
 - (OSFileOperation *)operationWithSourceURL:(NSURL *)srcURL dstRL:(NSURL *)dstURL {
-   NSUInteger foundIdx = [_operations indexOfObjectPassingTest:^BOOL(id<OSFileOperation>  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    NSUInteger foundIdx = [_operations indexOfObjectPassingTest:^BOOL(id<OSFileOperation>  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         BOOL res = [obj.sourceURL.path isEqualToString:srcURL.path] && [obj.dstURL.path isEqualToString:dstURL.path];
         if (res) {
             *stop = YES;
@@ -183,9 +183,9 @@ int copyFileCallBack(
 
 
 - (id<OSFileOperation>)copyItemAtURL:(NSURL *)srcURL
-                toURL:(NSURL *)dstURL
-             progress:(OSFileOperationProgress)progress
-    completionHandler:(OSFileOperationCompletionHandler)handler {
+                               toURL:(NSURL *)dstURL
+                            progress:(OSFileOperationProgress)progress
+                   completionHandler:(OSFileOperationCompletionHandler)handler {
     
     [self resetProgress];
     self.totalProgress.totalUnitCount++;
@@ -208,13 +208,15 @@ int copyFileCallBack(
                             waitUntilDone:NO];
     };
     return fileOperation;
+    
 }
 
 
+
 - (id<OSFileOperation>)moveItemAtURL:(NSURL *)srcURL
-                toURL:(NSURL *)dstURL
-             progress:(OSFileOperationProgress)progress
-    completionHandler:(OSFileOperationCompletionHandler)handler {
+                               toURL:(NSURL *)dstURL
+                            progress:(OSFileOperationProgress)progress
+                   completionHandler:(OSFileOperationCompletionHandler)handler {
     
     [self resetProgress];
     
@@ -284,10 +286,10 @@ int copyFileCallBack(
         _progressBlock = progress;
         
         NSProgress *naviteProgress = [[NSProgress alloc] initWithParent:[NSProgress currentProgress]
-                                                         userInfo:nil];
+                                                               userInfo:nil];
         naviteProgress.kind = NSProgressKindFile;
         [naviteProgress setUserInfoObject:NSProgressFileOperationKindKey
-                             forKey:NSProgressFileOperationKindCopying];
+                                   forKey:NSProgressFileOperationKindCopying];
         [naviteProgress setUserInfoObject:self.sourceURL forKey:NSStringFromSelector(@selector(sourceURL))];
         naviteProgress.cancellable = NO;
         naviteProgress.pausable = NO;
@@ -347,7 +349,7 @@ int copyFileCallBack(
         _previousProgressTimeStamp = _startTimeStamp = [[NSDate date] timeIntervalSince1970];
         
         _copyfileState = copyfile_state_alloc();
-
+        
         copyfile_state_set(_copyfileState, COPYFILE_STATE_STATUS_CB, &copyFileCallBack);
         copyfile_state_set(_copyfileState, COPYFILE_STATE_STATUS_CTX, (__bridge void *)self);
         const char *scourcePath = self.sourceURL.path.UTF8String;
@@ -355,15 +357,15 @@ int copyFileCallBack(
         // 执行copy文件，此方法会阻塞当前线程，直到文件拷贝完成为止
         int resCode = copyfile(scourcePath, dstPath, _copyfileState, [self flags]);
         /*
-        // copy完成后，若进度不为1，再次检测下本地的文件
-        if (self.progress.fractionCompleted != 1.0 && resCode == 0) {
-            NSError *error = nil;
-           self.receivedCopiedBytes = [self caclulateFileToatalSizeByFilePath:_dstURL.path error:&error];
-            if (!error) {
-                [self updateProgress];
-            }
-        }
-        */
+         // copy完成后，若进度不为1，再次检测下本地的文件
+         if (self.progress.fractionCompleted != 1.0 && resCode == 0) {
+         NSError *error = nil;
+         self.receivedCopiedBytes = [self caclulateFileToatalSizeByFilePath:_dstURL.path error:&error];
+         if (!error) {
+         [self updateProgress];
+         }
+         }
+         */
         if (resCode != 0 && ![self isCancelled]) {
             NSString *errorMessage = [NSString stringWithCString:strerror(errno) encoding:NSUTF8StringEncoding];
             self.error = [NSError errorWithDomain:NSCocoaErrorDomain code:resCode userInfo:@{NSFilePathErrorKey: errorMessage}];
@@ -438,7 +440,7 @@ int copyFileCallBack(
 - (void)finish {
     @synchronized (self) {
         
-         if (self.isExecuting && !self.isFinished) {
+        if (self.isExecuting && !self.isFinished) {
             [self willChangeValueForKey:@"isExecuting"];
             [self willChangeValueForKey:@"isFinished"];
             self.executing = NO;
@@ -450,11 +452,11 @@ int copyFileCallBack(
             }
             [self didChangeValueForKey:@"isFinished"];
             [self didChangeValueForKey:@"isExecuting"];
-         }
-         else if (self.isCancelled) {
-             self.error = [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorCancelled userInfo:nil];
-             self.writeState = OSFileWriteCanceled;
-         }
+        }
+        else if (self.isCancelled) {
+            self.error = [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorCancelled userInfo:nil];
+            self.writeState = OSFileWriteCanceled;
+        }
         
         self.progress.completedUnitCount = self.progress.totalUnitCount;
         self.completionHandler(self, self.error);
@@ -547,6 +549,12 @@ int copyFileCallBack(int what, int stage, copyfile_state_t state, const char *pa
             self.progress.completedUnitCount = receivedCopiedBytes;
         }
     }
+}
+
+- (void)setWriteState:(OSFileWriteStatus)writeState {
+    [self willChangeValueForKey:@"writeState"];
+    _writeState = writeState;
+    [self didChangeValueForKey:@"writeState"];
 }
 
 - (NSString *)description {
