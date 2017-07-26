@@ -28,6 +28,8 @@
 		187C2A0C1F2456A10080C86D /* NSFileManager+FileOperationExtend.m in Sources */ = {isa = PBXBuildFile; fileRef = 187C2A0B1F2456A10080C86D /* NSFileManager+FileOperationExtend.m */; };
 		187C2A0D1F2456A10080C86D /* NSFileManager+FileOperationExtend.m in Sources */ = {isa = PBXBuildFile; fileRef = 187C2A0B1F2456A10080C86D /* NSFileManager+FileOperationExtend.m */; };
 		187C2A221F2457080080C86D /* NSString+FileExtend.m in Sources */ = {isa = PBXBuildFile; fileRef = 187C2A211F2457080080C86D /* NSString+FileExtend.m */; };
+		18904F421F28D30500C75AC5 /* DirectoryWatcher.m in Sources */ = {isa = PBXBuildFile; fileRef = 18904F411F28D30500C75AC5 /* DirectoryWatcher.m */; };
+		18904F451F28D32300C75AC5 /* MBProgressHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 18904F441F28D32300C75AC5 /* MBProgressHUD.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -65,6 +67,10 @@
 		187C2A0B1F2456A10080C86D /* NSFileManager+FileOperationExtend.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSFileManager+FileOperationExtend.m"; sourceTree = "<group>"; };
 		187C2A201F2457080080C86D /* NSString+FileExtend.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+FileExtend.h"; sourceTree = "<group>"; };
 		187C2A211F2457080080C86D /* NSString+FileExtend.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+FileExtend.m"; sourceTree = "<group>"; };
+		18904F401F28D30500C75AC5 /* DirectoryWatcher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DirectoryWatcher.h; sourceTree = "<group>"; };
+		18904F411F28D30500C75AC5 /* DirectoryWatcher.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DirectoryWatcher.m; sourceTree = "<group>"; };
+		18904F431F28D32300C75AC5 /* MBProgressHUD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBProgressHUD.h; sourceTree = "<group>"; };
+		18904F441F28D32300C75AC5 /* MBProgressHUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBProgressHUD.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -98,6 +104,10 @@
 				187C2A0B1F2456A10080C86D /* NSFileManager+FileOperationExtend.m */,
 				187C2A201F2457080080C86D /* NSString+FileExtend.h */,
 				187C2A211F2457080080C86D /* NSString+FileExtend.m */,
+				18904F401F28D30500C75AC5 /* DirectoryWatcher.h */,
+				18904F411F28D30500C75AC5 /* DirectoryWatcher.m */,
+				18904F431F28D32300C75AC5 /* MBProgressHUD.h */,
+				18904F441F28D32300C75AC5 /* MBProgressHUD.m */,
 				187C298D1F2438DA0080C86D /* Main.storyboard */,
 				187C29901F2438DA0080C86D /* Assets.xcassets */,
 				187C29921F2438DA0080C86D /* LaunchScreen.storyboard */,
@@ -278,9 +288,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				18904F421F28D30500C75AC5 /* DirectoryWatcher.m in Sources */,
 				187C298C1F2438DA0080C86D /* SampleIOSViewController.m in Sources */,
 				187C2A081F2452470080C86D /* FoldersViewController.m in Sources */,
 				187C2A0C1F2456A10080C86D /* NSFileManager+FileOperationExtend.m in Sources */,
+				18904F451F28D32300C75AC5 /* MBProgressHUD.m in Sources */,
 				187C29891F2438DA0080C86D /* AppDelegate.m in Sources */,
 				187C29861F2438DA0080C86D /* main.m in Sources */,
 				187C29FE1F244B330080C86D /* OSFileManager.m in Sources */,

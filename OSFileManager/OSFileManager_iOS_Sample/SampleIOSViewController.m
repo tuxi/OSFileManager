@@ -59,7 +59,7 @@
             self.progressView2.progress = progress.fractionCompleted;
         });
     } completionHandler:^(id<OSFileOperation> fileOperation, NSError *error) {
-        NSLog(@"%ld", fileOperation.writeState);
+        
         
     }];
 }
@@ -76,7 +76,7 @@
 }
 - (IBAction)documentBrower:(id)sender {
     
-    FoldersViewController *vc = [[FoldersViewController alloc] initWithPath:kDoucmentPath];
+    FoldersViewController *vc = [[FoldersViewController alloc] initWithRootDirectory:kDoucmentPath];
     [self.navigationController showViewController:vc sender:self];
 }
 
