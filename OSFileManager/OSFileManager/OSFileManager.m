@@ -264,7 +264,7 @@ int copyFileCallBack(
     NSTimeInterval _previousProgressTimeStamp;
     NSString *_previousOperationFilePath;
     OSFileInteger _previousReceivedCopiedBytes;
-    
+    dispatch_queue_t _operationQueue;
 }
 
 @synthesize executing = _executing;
@@ -284,6 +284,10 @@ int copyFileCallBack(
         _fileManager = [NSFileManager new];
         _completionHandler = completionHandler;
         _progressBlock = progress;
+        
+        NSString *queueName = @"OSFileOperationQueue";
+        _operationQueue = dispatch_queue_create([queueName UTF8String], DISPATCH_QUEUE_SERIAL);
+        dispatch_set_target_queue(_operationQueue, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0));
         
         NSProgress *naviteProgress = [[NSProgress alloc] initWithParent:[NSProgress currentProgress]
                                                                userInfo:nil];
@@ -330,9 +334,9 @@ int copyFileCallBack(
     return self.sourceURL.lastPathComponent;
 }
 
-
 - (void)start {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{ @autoreleasepool {
+        
         
         [self willChangeValueForKey:@"isExecuting"];
         self.executing = YES;
@@ -373,7 +377,7 @@ int copyFileCallBack(
         }
         copyfile_state_free(_copyfileState);
         [self finish];
-    });
+    }});
 }
 
 - (void)cancel {
@@ -474,7 +478,7 @@ int copyFileCallBack(
     return flags;
 }
 
-int copyFileCallBack(int what, int stage, copyfile_state_t state, const char *path, const char *destination, void *context) {
+int copyFileCallBack(int what, int stage, copyfile_state_t state, const char *path, const char *destination, void *context) { @autoreleasepool {
     OSFileOperation *self = (__bridge OSFileOperation *)context;
     if (self.isCancelled) {
         NSLog(@"fil operation was cancelled");
@@ -506,9 +510,12 @@ int copyFileCallBack(int what, int stage, copyfile_state_t state, const char *pa
             break;
     }
     return COPYFILE_CONTINUE;
-}
+    
+}}
 
-- (void)updateStateWithCopiedBytes:(OSFileInteger)receivedCopiedBytes sourcePath:(NSString *)sourcePath {
+- (void)updateStateWithCopiedBytes:(OSFileInteger)receivedCopiedBytes sourcePath:(NSString *)sourcePath { @autoreleasepool {
+    
+    
     if (![_previousOperationFilePath isEqualToString:sourcePath]) {
         _previousReceivedCopiedBytes = 0;
         _previousOperationFilePath = [sourcePath copy];
@@ -526,7 +533,7 @@ int copyFileCallBack(int what, int stage, copyfile_state_t state, const char *pa
     NSTimeInterval overallTransferRate = receivedCopiedBytes / (now - _startTimeStamp);
     NSTimeInterval averageTransferRate = TIME_REMAINING_SMOOTHING_FACTOR * previousTransferRate + ((1 - TIME_REMAINING_SMOOTHING_FACTOR) * overallTransferRate);
     self.secondsRemaining = (_sourceTotalBytes - receivedCopiedBytes) / averageTransferRate;
-}
+}}
 
 - (void)updateProgress {
     _progressValue = @(self.progress.fractionCompleted);
