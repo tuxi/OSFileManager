@@ -43,14 +43,6 @@ static void *FileProgressObserverContext = &FileProgressObserverContext;
 @property (nonatomic, copy) OSFileOperationCompletionHandler completionHandler;
 @property (nonatomic, copy) OSFileOperationProgress progressBlock;
 
-int copyFileCallBack(
-                     int what,
-                     int stage,
-                     copyfile_state_t state,
-                     const char *source,
-                     const char *destination,
-                     void *context);
-
 @end
 
 @implementation OSFileManager
@@ -354,22 +346,13 @@ int copyFileCallBack(
         
         _copyfileState = copyfile_state_alloc();
         
-        copyfile_state_set(_copyfileState, COPYFILE_STATE_STATUS_CB, &copyFileCallBack);
+        copyfile_state_set(_copyfileState, COPYFILE_STATE_STATUS_CB, &OSCopyFileCallBack);
         copyfile_state_set(_copyfileState, COPYFILE_STATE_STATUS_CTX, (__bridge void *)self);
         const char *scourcePath = self.sourceURL.path.UTF8String;
         const char *dstPath = self.dstURL.path.UTF8String;
         // 执行copy文件，此方法会阻塞当前线程，直到文件拷贝完成为止
         int resCode = copyfile(scourcePath, dstPath, _copyfileState, [self flags]);
-        /*
-         // copy完成后，若进度不为1，再次检测下本地的文件
-         if (self.progress.fractionCompleted != 1.0 && resCode == 0) {
-         NSError *error = nil;
-         self.receivedCopiedBytes = [self caclulateFileToatalSizeByFilePath:_dstURL.path error:&error];
-         if (!error) {
-         [self updateProgress];
-         }
-         }
-         */
+
         if (resCode != 0 && ![self isCancelled]) {
             NSString *errorMessage = [NSString stringWithCString:strerror(errno) encoding:NSUTF8StringEncoding];
             self.error = [NSError errorWithDomain:NSCocoaErrorDomain code:resCode userInfo:@{NSFilePathErrorKey: errorMessage}];
@@ -478,7 +461,7 @@ int copyFileCallBack(
     return flags;
 }
 
-int copyFileCallBack(int what, int stage, copyfile_state_t state, const char *path, const char *destination, void *context) { @autoreleasepool {
+static int OSCopyFileCallBack(int what, int stage, copyfile_state_t state, const char *path, const char *destination, void *context) { @autoreleasepool {
     OSFileOperation *self = (__bridge OSFileOperation *)context;
     if (self.isCancelled) {
         NSLog(@"fil operation was cancelled");
@@ -486,6 +469,73 @@ int copyFileCallBack(int what, int stage, copyfile_state_t state, const char *pa
     }
     
     switch (what) {
+        case COPYFILE_RECURSE_FILE: {
+            switch (stage) {
+                case COPYFILE_START: {
+                    NSLog(@"File start copy");
+                    break;
+                }
+                case COPYFILE_FINISH: {
+                    NSLog(@"File copy finish");
+                    break;
+                }
+                case COPYFILE_ERR: {
+                    NSLog(@"File error:%d", errno);
+                    break;
+                }
+                default:
+                    break;
+            }
+            
+            break;
+        }
+        case COPYFILE_RECURSE_DIR:
+            switch (stage) {
+                case COPYFILE_START: {
+                    NSLog(@"Dir Start");
+                    break;
+                }
+                case COPYFILE_FINISH: {
+                    NSLog(@"Dir Finish");
+                    break;
+                }
+                case COPYFILE_ERR: {
+                    NSLog(@"Dir Error");
+                    break;
+                }
+                default:
+                    break;
+            }
+        case COPYFILE_RECURSE_DIR_CLEANUP:
+            switch (stage) {
+                case COPYFILE_START:
+                    NSLog(@"Dir Cleanup Start");
+                    break;
+                case COPYFILE_FINISH:
+                    NSLog(@"Dir Cleanup Finish");
+                    break;
+                case COPYFILE_ERR:
+                    NSLog(@"Dir Cleanup Error");
+                    break;
+                default:
+                    break;
+            }
+        case COPYFILE_RECURSE_ERROR:
+            break;
+        case COPYFILE_COPY_XATTR:
+            switch (stage) {
+                case COPYFILE_START:
+                    NSLog(@"Xattr Start");
+                    break;
+                case COPYFILE_FINISH:
+                    NSLog(@"Xattr Finish");
+                    break;
+                case COPYFILE_ERR:
+                    NSLog(@"Xattr Error");
+                    break;
+                default:
+                    break;
+            }
         case COPYFILE_COPY_DATA:
             switch (stage) {
                 case COPYFILE_PROGRESS: { // copy进度回调
