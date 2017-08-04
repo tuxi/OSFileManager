@@ -618,4 +618,9 @@ static int OSCopyFileCallBack(int what, int stage, copyfile_state_t state, const
     return [NSString stringWithFormat:@"OSFileOperation:\nsourceURL:%@\ndstURL:%@", self.sourceURL, self.dstURL];
 }
 
+- (void)dealloc {
+    copyfile_state_free(_copyfileState);
+    [self cancel];
+}
+
 @end
