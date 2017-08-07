@@ -38,7 +38,7 @@
         });
         
     } completionHandler:^(id<OSFileOperation> fileOperation, NSError *error) {
-        NSLog(@"%ld", fileOperation.writeState);
+        NSLog(@"%lu", fileOperation.writeState);
     }];
 }
 - (IBAction)cancelBigFileCopy:(id)sender {

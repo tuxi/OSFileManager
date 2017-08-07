@@ -103,6 +103,9 @@ static void *FileProgressObserverContext = &FileProgressObserverContext;
     if (context == FileProgressObserverContext && object == self.totalProgress) {
         dispatch_async(dispatch_get_main_queue(), ^{
             if (self.totalProgressBlock) {
+                //                if (self.totalProgress.completedUnitCount > self.totalProgress.totalUnitCount) {
+                //                    self.totalProgress.completedUnitCount = self.totalProgress.totalUnitCount;
+                //                }
                 self.totalProgressBlock(self.totalProgress);
             }
         });
@@ -121,7 +124,7 @@ static void *FileProgressObserverContext = &FileProgressObserverContext;
     BOOL hasActiveFlag = [self operations].count;
     if (hasActiveFlag == NO) {
         @try {
-            [self.totalProgress removeObserver:self forKeyPath:NSStringFromSelector(@selector(fractionCompleted))];
+            [self.totalProgress removeObserver:self forKeyPath:NSStringFromSelector(@selector(fractionCompleted)) context:FileProgressObserverContext];
         } @catch (NSException *exception) {
             NSLog(@"Error: Repeated removeObserver(keyPath = fractionCompleted)");
         } @finally {
@@ -289,7 +292,7 @@ static void *FileProgressObserverContext = &FileProgressObserverContext;
         [naviteProgress setUserInfoObject:self.sourceURL forKey:NSStringFromSelector(@selector(sourceURL))];
         naviteProgress.cancellable = NO;
         naviteProgress.pausable = NO;
-        naviteProgress.totalUnitCount = NSURLSessionTransferSizeUnknown;
+        naviteProgress.totalUnitCount = 0.1;//NSURLSessionTransferSizeUnknown;
         naviteProgress.completedUnitCount = 0;
         self.progress = naviteProgress;
         
@@ -327,7 +330,7 @@ static void *FileProgressObserverContext = &FileProgressObserverContext;
 }
 
 - (void)start {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{ @autoreleasepool {
+    dispatch_async(_operationQueue, ^{ @autoreleasepool {
         
         
         [self willChangeValueForKey:@"isExecuting"];
@@ -352,7 +355,13 @@ static void *FileProgressObserverContext = &FileProgressObserverContext;
         const char *dstPath = self.dstURL.path.UTF8String;
         // 执行copy文件，此方法会阻塞当前线程，直到文件拷贝完成为止
         int resCode = copyfile(scourcePath, dstPath, _copyfileState, [self flags]);
-
+        
+        // copy完成后，再更新下进度，防止进度不对
+        if (self.progress.completedUnitCount != self.progress.totalUnitCount) {
+            self.progress.completedUnitCount = self.progress.totalUnitCount;
+            [self updateProgress];
+        }
+        
         if (resCode != 0 && ![self isCancelled]) {
             NSString *errorMessage = [NSString stringWithCString:strerror(errno) encoding:NSUTF8StringEncoding];
             self.error = [NSError errorWithDomain:NSCocoaErrorDomain code:resCode userInfo:@{NSFilePathErrorKey: errorMessage}];
@@ -461,7 +470,7 @@ static void *FileProgressObserverContext = &FileProgressObserverContext;
     return flags;
 }
 
-static int OSCopyFileCallBack(int what, int stage, copyfile_state_t state, const char *path, const char *destination, void *context) { @autoreleasepool {
+static inline int OSCopyFileCallBack(int what, int stage, copyfile_state_t state, const char *path, const char *destination, void *context) { @autoreleasepool {
     OSFileOperation *self = (__bridge OSFileOperation *)context;
     if (self.isCancelled) {
         NSLog(@"fil operation was cancelled");
@@ -469,73 +478,6 @@ static int OSCopyFileCallBack(int what, int stage, copyfile_state_t state, const
     }
     
     switch (what) {
-        case COPYFILE_RECURSE_FILE: {
-            switch (stage) {
-                case COPYFILE_START: {
-                    NSLog(@"File start copy");
-                    break;
-                }
-                case COPYFILE_FINISH: {
-                    NSLog(@"File copy finish");
-                    break;
-                }
-                case COPYFILE_ERR: {
-                    NSLog(@"File error:%d", errno);
-                    break;
-                }
-                default:
-                    break;
-            }
-            
-            break;
-        }
-        case COPYFILE_RECURSE_DIR:
-            switch (stage) {
-                case COPYFILE_START: {
-                    NSLog(@"Dir Start");
-                    break;
-                }
-                case COPYFILE_FINISH: {
-                    NSLog(@"Dir Finish");
-                    break;
-                }
-                case COPYFILE_ERR: {
-                    NSLog(@"Dir Error");
-                    break;
-                }
-                default:
-                    break;
-            }
-        case COPYFILE_RECURSE_DIR_CLEANUP:
-            switch (stage) {
-                case COPYFILE_START:
-                    NSLog(@"Dir Cleanup Start");
-                    break;
-                case COPYFILE_FINISH:
-                    NSLog(@"Dir Cleanup Finish");
-                    break;
-                case COPYFILE_ERR:
-                    NSLog(@"Dir Cleanup Error");
-                    break;
-                default:
-                    break;
-            }
-        case COPYFILE_RECURSE_ERROR:
-            break;
-        case COPYFILE_COPY_XATTR:
-            switch (stage) {
-                case COPYFILE_START:
-                    NSLog(@"Xattr Start");
-                    break;
-                case COPYFILE_FINISH:
-                    NSLog(@"Xattr Finish");
-                    break;
-                case COPYFILE_ERR:
-                    NSLog(@"Xattr Error");
-                    break;
-                default:
-                    break;
-            }
         case COPYFILE_COPY_DATA:
             switch (stage) {
                 case COPYFILE_PROGRESS: { // copy进度回调
@@ -583,6 +525,7 @@ static int OSCopyFileCallBack(int what, int stage, copyfile_state_t state, const
     NSTimeInterval overallTransferRate = receivedCopiedBytes / (now - _startTimeStamp);
     NSTimeInterval averageTransferRate = TIME_REMAINING_SMOOTHING_FACTOR * previousTransferRate + ((1 - TIME_REMAINING_SMOOTHING_FACTOR) * overallTransferRate);
     self.secondsRemaining = (_sourceTotalBytes - receivedCopiedBytes) / averageTransferRate;
+    [self.progress setUserInfoObject:@(self.secondsRemaining) forKey:@"secondsRemaining"];
 }}
 
 - (void)updateProgress {
@@ -619,8 +562,6 @@ static int OSCopyFileCallBack(int what, int stage, copyfile_state_t state, const
 }
 
 - (void)dealloc {
-    copyfile_state_free(_copyfileState);
-    [self cancel];
 }
 
 @end
