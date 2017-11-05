@@ -2,7 +2,7 @@
 
 
 ```sh
-pod 'OSFileManager', '~> 0.0.1'
+pod 'OSFileManager', '~> 0.0.2'
 ```
 
 

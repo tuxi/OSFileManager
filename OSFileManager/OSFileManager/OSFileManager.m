@@ -181,7 +181,9 @@ static void *FileProgressObserverContext = &FileProgressObserverContext;
                                toURL:(NSURL *)dstURL
                             progress:(OSFileOperationProgress)progress
                    completionHandler:(OSFileOperationCompletionHandler)handler {
-    
+    if (!_operationQueue) {
+        _operationQueue = [NSOperationQueue new];
+    }
     [self resetProgress];
     self.totalProgress.totalUnitCount++;
     [self.totalProgress becomeCurrentWithPendingUnitCount:1];
@@ -212,7 +214,9 @@ static void *FileProgressObserverContext = &FileProgressObserverContext;
                                toURL:(NSURL *)dstURL
                             progress:(OSFileOperationProgress)progress
                    completionHandler:(OSFileOperationCompletionHandler)handler {
-    
+    if (!_operationQueue) {
+        _operationQueue = [NSOperationQueue new];
+    }
     [self resetProgress];
     
     self.totalProgress.totalUnitCount++;
@@ -248,6 +252,7 @@ static void *FileProgressObserverContext = &FileProgressObserverContext;
 - (void)cancelAllOperation {
     [_operationQueue cancelAllOperations];
     [_operations removeAllObjects];
+    _operationQueue = nil;
 }
 
 @end
@@ -259,7 +264,7 @@ static void *FileProgressObserverContext = &FileProgressObserverContext;
     NSTimeInterval _previousProgressTimeStamp;
     NSString *_previousOperationFilePath;
     OSFileInteger _previousReceivedCopiedBytes;
-    dispatch_queue_t _operationQueue;
+    dispatch_queue_t _dispatchQueue;
 }
 
 @synthesize executing = _executing;
@@ -281,8 +286,8 @@ static void *FileProgressObserverContext = &FileProgressObserverContext;
         _progressBlock = progress;
         
         NSString *queueName = @"OSFileOperationQueue";
-        _operationQueue = dispatch_queue_create([queueName UTF8String], DISPATCH_QUEUE_SERIAL);
-        dispatch_set_target_queue(_operationQueue, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0));
+        _dispatchQueue = dispatch_queue_create([queueName UTF8String], DISPATCH_QUEUE_SERIAL);
+        dispatch_set_target_queue(_dispatchQueue, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0));
         
         NSProgress *naviteProgress = [[NSProgress alloc] initWithParent:[NSProgress currentProgress]
                                                                userInfo:nil];
@@ -330,46 +335,48 @@ static void *FileProgressObserverContext = &FileProgressObserverContext;
 }
 
 - (void)start {
-    dispatch_async(_operationQueue, ^{ @autoreleasepool {
-        
-        
-        [self willChangeValueForKey:@"isExecuting"];
-        self.executing = YES;
-        self.writeState = OSFileWriteExecuting;
-        [self didChangeValueForKey:@"isExecuting"];
-        
-        BOOL isExist = [_fileManager fileExistsAtPath:[self.dstURL.path stringByAppendingPathComponent:self.sourceURL.lastPathComponent]];
-        if (isExist) {
-            self.error = [NSError errorWithDomain:NSCocoaErrorDomain code:NSFileWriteFileExistsError userInfo:@{@"NSErrorUserInfoKey": @"File exist"}];
-            [self finish];
-            return;
-        }
-        
-        _previousProgressTimeStamp = _startTimeStamp = [[NSDate date] timeIntervalSince1970];
-        
-        _copyfileState = copyfile_state_alloc();
-        
-        copyfile_state_set(_copyfileState, COPYFILE_STATE_STATUS_CB, &OSCopyFileCallBack);
-        copyfile_state_set(_copyfileState, COPYFILE_STATE_STATUS_CTX, (__bridge void *)self);
-        const char *scourcePath = self.sourceURL.path.UTF8String;
-        const char *dstPath = self.dstURL.path.UTF8String;
-        // 执行copy文件，此方法会阻塞当前线程，直到文件拷贝完成为止
-        int resCode = copyfile(scourcePath, dstPath, _copyfileState, [self flags]);
-        
-        // copy完成后，再更新下进度，防止进度不对
-        if (self.progress.completedUnitCount != self.progress.totalUnitCount) {
-            self.progress.completedUnitCount = self.progress.totalUnitCount;
-            [self updateProgress];
-        }
-        
-        if (resCode != 0 && ![self isCancelled]) {
-            NSString *errorMessage = [NSString stringWithCString:strerror(errno) encoding:NSUTF8StringEncoding];
-            self.error = [NSError errorWithDomain:NSCocoaErrorDomain code:resCode userInfo:@{NSFilePathErrorKey: errorMessage}];
-            NSLog(@"%@", errorMessage);
-        }
-        copyfile_state_free(_copyfileState);
+    [self willChangeValueForKey:@"isExecuting"];
+    self.executing = YES;
+    self.writeState = OSFileWriteExecuting;
+    [self didChangeValueForKey:@"isExecuting"];
+    
+    BOOL isExist = [_fileManager fileExistsAtPath:[self.dstURL.path stringByAppendingPathComponent:self.sourceURL.lastPathComponent]];
+    if (isExist) {
+        self.error = [NSError errorWithDomain:NSCocoaErrorDomain code:NSFileWriteFileExistsError userInfo:@{@"NSErrorUserInfoKey": @"File exist"}];
         [self finish];
+        return;
+    }
+    
+    dispatch_async(_dispatchQueue, ^{ @autoreleasepool {
+        [self operationDidStart];
     }});
+}
+
+- (void)operationDidStart {
+    _previousProgressTimeStamp = _startTimeStamp = [[NSDate date] timeIntervalSince1970];
+    
+    _copyfileState = copyfile_state_alloc();
+    
+    copyfile_state_set(_copyfileState, COPYFILE_STATE_STATUS_CB, &OSCopyFileCallBack);
+    copyfile_state_set(_copyfileState, COPYFILE_STATE_STATUS_CTX, (__bridge void *)self);
+    const char *scourcePath = self.sourceURL.path.UTF8String;
+    const char *dstPath = self.dstURL.path.UTF8String;
+    // 执行copy文件，此方法会阻塞当前线程，直到文件拷贝完成为止
+    int resCode = copyfile(scourcePath, dstPath, _copyfileState, [self flags]);
+    
+    // copy完成后，再更新下进度，防止进度不对
+    if (self.progress.completedUnitCount != self.progress.totalUnitCount) {
+        self.progress.completedUnitCount = self.progress.totalUnitCount;
+        [self updateProgress];
+    }
+    
+    if (resCode != 0 && ![self isCancelled]) {
+        NSString *errorMessage = [NSString stringWithCString:strerror(errno) encoding:NSUTF8StringEncoding];
+        self.error = [NSError errorWithDomain:NSCocoaErrorDomain code:resCode userInfo:@{NSFilePathErrorKey: errorMessage}];
+        NSLog(@"%@", errorMessage);
+    }
+    copyfile_state_free(_copyfileState);
+    [self finish];
 }
 
 - (void)cancel {
@@ -505,7 +512,8 @@ static inline int OSCopyFileCallBack(int what, int stage, copyfile_state_t state
     
 }}
 
-- (void)updateStateWithCopiedBytes:(OSFileInteger)receivedCopiedBytes sourcePath:(NSString *)sourcePath { @autoreleasepool {
+- (void)updateStateWithCopiedBytes:(OSFileInteger)receivedCopiedBytes
+                        sourcePath:(NSString *)sourcePath { @autoreleasepool {
     
     
     if (![_previousOperationFilePath isEqualToString:sourcePath]) {
@@ -565,3 +573,4 @@ static inline int OSCopyFileCallBack(int what, int stage, copyfile_state_t state
 }
 
 @end
+
