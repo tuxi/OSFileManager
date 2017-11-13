@@ -172,6 +172,18 @@ static void *FileProgressObserverContext = &FileProgressObserverContext;
     return nil;
 }
 
+- (void)setCurrentOperationsFinishedCallBack:(OSFileCurrentOperationsFinishedCallBack)completion {
+    OSFileCurrentOperationsFinishedCallBack copiedCompletion = [completion copy];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [self.operationQueue waitUntilAllOperationsAreFinished];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            copiedCompletion();
+        });
+    });
+}
+
+
 ////////////////////////////////////////////////////////////////////////
 #pragma mark - Public methods
 ////////////////////////////////////////////////////////////////////////
@@ -297,7 +309,7 @@ static void *FileProgressObserverContext = &FileProgressObserverContext;
         [naviteProgress setUserInfoObject:self.sourceURL forKey:NSStringFromSelector(@selector(sourceURL))];
         naviteProgress.cancellable = NO;
         naviteProgress.pausable = NO;
-        naviteProgress.totalUnitCount = 0.1;//NSURLSessionTransferSizeUnknown;
+        naviteProgress.totalUnitCount = NSURLSessionTransferSizeUnknown;//NSURLSessionTransferSizeUnknown -1;
         naviteProgress.completedUnitCount = 0;
         self.progress = naviteProgress;
         
@@ -365,8 +377,14 @@ static void *FileProgressObserverContext = &FileProgressObserverContext;
     int resCode = copyfile(scourcePath, dstPath, _copyfileState, [self flags]);
     
     // copy完成后，再更新下进度，防止进度不对
-    if (self.progress.completedUnitCount != self.progress.totalUnitCount) {
+    if (self.progress.completedUnitCount != self.progress.totalUnitCount && self.progress.totalUnitCount > 0) {
         self.progress.completedUnitCount = self.progress.totalUnitCount;
+        [self updateProgress];
+    }
+    // 当copy的文件size为0时，更新进度触发完成任务(注意totalUnitCount赋值为0.1无效)，
+    // 防止completedUnitCount和totalUnitCount都为0时，完成任务后，无法通知到父单元的问题
+    if (self.progress.totalUnitCount <= 0) {
+        self.progress.completedUnitCount = (self.progress.totalUnitCount = 1);
         [self updateProgress];
     }
     

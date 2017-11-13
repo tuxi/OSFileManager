@@ -21,6 +21,7 @@ typedef NS_ENUM(NSInteger, OSFileWriteStatus) {
 typedef unsigned long long OSFileInteger;
 typedef void(^OSFileOperationCompletionHandler)(id<OSFileOperation> fileOperation, NSError *error);
 typedef void(^OSFileOperationProgress)(NSProgress *progress);
+typedef void(^OSFileCurrentOperationsFinishedCallBack)(void);
 
 @interface OSFileManager : NSObject
 
@@ -36,7 +37,10 @@ typedef void(^OSFileOperationProgress)(NSProgress *progress);
 
 - (id<OSFileOperation>)moveItemAtURL:(NSURL *)srcURL toURL:(NSURL *)dstURL progress:(OSFileOperationProgress)progress completionHandler:(OSFileOperationCompletionHandler)handler;
 
+/// 取消所有任务
 - (void)cancelAllOperation;
+/// 等到当前所有任务完成后，执行此回调
+- (void)setCurrentOperationsFinishedCallBack:(OSFileCurrentOperationsFinishedCallBack)completion;
 
 @end
 
@@ -60,3 +64,4 @@ typedef void(^OSFileOperationProgress)(NSProgress *progress);
 - (void)cancel;
 
 @end
+
