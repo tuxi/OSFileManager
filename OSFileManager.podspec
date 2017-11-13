@@ -10,7 +10,7 @@ Pod::Spec.new do |s|
 
 
   s.name         = "OSFileManager"
-  s.version      = "0.0.2"
+  s.version      = "0.0.3"
   s.summary      = "iOS设备上异步文件操作(移动、复制)，同时回调文件进度及状态信息"
   s.description  = "iOS设备上异步文件操作(移动、复制)，同时回调文件进度及状态信息，适用于大文件操作"
   s.platform     = :ios, "8.0"
