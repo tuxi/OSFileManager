@@ -21,15 +21,17 @@ typedef NS_ENUM(NSInteger, OSFileWriteStatus) {
 typedef unsigned long long OSFileInteger;
 typedef void(^OSFileOperationCompletionHandler)(id<OSFileOperation> fileOperation, NSError *error);
 typedef void(^OSFileOperationProgress)(NSProgress *progress);
-typedef void(^OSFileCurrentOperationsFinishedCallBack)(void);
+typedef void(^OSFileCurrentOperationsFinished)(void);
 
 @interface OSFileManager : NSObject
 
 @property (nonatomic, assign) NSInteger maxConcurrentOperationCount;
 @property (nonatomic, assign) NSUInteger pendingOperationCount;
-@property (nonatomic, strong) OSFileOperationProgress totalProgressBlock;
+@property (nonatomic, copy) OSFileOperationProgress totalProgressBlock;
 @property (nonatomic, assign) NSNumber *totalProgressValue;
 @property (nonatomic, strong, readonly) NSArray<id<OSFileOperation>> *operations;
+/// 等到当前所有任务完成后，执行此回调
+@property (nonatomic, copy) OSFileCurrentOperationsFinished currentOperationsFinishedBlock;
 
 + (OSFileManager *)defaultManager;
 
@@ -39,8 +41,6 @@ typedef void(^OSFileCurrentOperationsFinishedCallBack)(void);
 
 /// 取消所有任务
 - (void)cancelAllOperation;
-/// 等到当前所有任务完成后，执行此回调
-- (void)setCurrentOperationsFinishedCallBack:(OSFileCurrentOperationsFinishedCallBack)completion;
 
 @end
 

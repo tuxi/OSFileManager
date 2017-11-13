@@ -40,6 +40,10 @@
     } completionHandler:^(id<OSFileOperation> fileOperation, NSError *error) {
         NSLog(@"%lu", fileOperation.writeState);
     }];
+    
+    [OSFileManager defaultManager].currentOperationsFinishedBlock = ^{
+        NSLog(@"当前任务已全部完成");
+    };
 }
 - (IBAction)cancelBigFileCopy:(id)sender {
     if (_bidOperation) {

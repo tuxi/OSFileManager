@@ -172,11 +172,14 @@ static void *FileProgressObserverContext = &FileProgressObserverContext;
     return nil;
 }
 
-- (void)setCurrentOperationsFinishedCallBack:(OSFileCurrentOperationsFinishedCallBack)completion {
-    OSFileCurrentOperationsFinishedCallBack copiedCompletion = [completion copy];
+- (void)setCurrentOperationsFinishedBlock:(OSFileCurrentOperationsFinished)currentOperationsFinishedBlock {
+    _currentOperationsFinishedBlock = currentOperationsFinishedBlock;
+    if (!currentOperationsFinishedBlock) {
+        return;
+    }
+    OSFileCurrentOperationsFinished copiedCompletion = [currentOperationsFinishedBlock copy];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [self.operationQueue waitUntilAllOperationsAreFinished];
-        
         dispatch_async(dispatch_get_main_queue(), ^{
             copiedCompletion();
         });
@@ -309,7 +312,7 @@ static void *FileProgressObserverContext = &FileProgressObserverContext;
         [naviteProgress setUserInfoObject:self.sourceURL forKey:NSStringFromSelector(@selector(sourceURL))];
         naviteProgress.cancellable = NO;
         naviteProgress.pausable = NO;
-        naviteProgress.totalUnitCount = NSURLSessionTransferSizeUnknown;//NSURLSessionTransferSizeUnknown -1;
+        naviteProgress.totalUnitCount = 0.0;//NSURLSessionTransferSizeUnknown -1;
         naviteProgress.completedUnitCount = 0;
         self.progress = naviteProgress;
         
