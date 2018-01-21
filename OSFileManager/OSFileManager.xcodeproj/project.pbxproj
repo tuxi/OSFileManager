@@ -354,7 +354,7 @@
 				INFOPLIST_FILE = OSFileManager_iOS_Sample/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.sey.OSFileManager-iOS-Sample.OSFileManager-iOS-Sample";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.alpface.OSFileManager-iOS-Sample.OSFileManager-iOS-Sample";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 			};
@@ -369,7 +369,7 @@
 				INFOPLIST_FILE = OSFileManager_iOS_Sample/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.sey.OSFileManager-iOS-Sample.OSFileManager-iOS-Sample";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.alpface.OSFileManager-iOS-Sample.OSFileManager-iOS-Sample";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
@@ -385,7 +385,7 @@
 				INFOPLIST_FILE = OSFileManager_Mac_Sample/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.sey.OSFileManager-iOS-Sample.OSFileManager-Mac-Sample";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.alpface.OSFileManager-iOS-Sample.OSFileManager-Mac-Sample";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -399,7 +399,7 @@
 				INFOPLIST_FILE = OSFileManager_Mac_Sample/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.sey.OSFileManager-iOS-Sample.OSFileManager-Mac-Sample";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.alpface.OSFileManager-iOS-Sample.OSFileManager-Mac-Sample";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
